@@ -8,6 +8,7 @@ import java.util.List;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class CargarVehiculos extends javax.swing.JPanel {
      * Creates new form CargarVehiculos
      */
        List<Usuarios> usuario = new ArrayList<>();
+       List<Vehiculos> vehiculos = new ArrayList<>();
 
 
     public CargarVehiculos() {
@@ -189,12 +191,12 @@ public class CargarVehiculos extends javax.swing.JPanel {
 
         for (int i = 0; i < model.getRowCount(); i++) {
             Usuarios u = new Usuarios();
-            u.setNombre(String.valueOf(model.getValueAt(i, 0)));
-            u.setProfesion(String.valueOf(model.getValueAt(i, 1)));
-            u.setTipodeVehiculo(String.valueOf(model.getValueAt(i, 2)));
-            u.setPlaca(String.valueOf(model.getValueAt(i, 3)));
-            u.setModelo(String.valueOf(model.getValueAt(i, 4)));
-            u.setColor(String.valueOf(model.getValueAt(i, 5)));
+            
+            u.setCarne(String.valueOf(model.getValueAt(i, 0)));
+            u.setNombre(String.valueOf(model.getValueAt(i, 1)));
+            u.setPlaca(String.valueOf(model.getValueAt(i, 2)));
+            u.setCarrera(String.valueOf(model.getValueAt(i, 3)));
+           
 
 
             Usuarios.agregarUsuario(u); // se guarda eb la  global
@@ -211,19 +213,17 @@ public class CargarVehiculos extends javax.swing.JPanel {
             new OutputStreamWriter(new FileOutputStream(archivo), java.nio.charset.StandardCharsets.UTF_8))) {
 
         // titulos del archiuvo
-        pw.println("Nombre,Profesion,Tipo de Vehiculo,Placa,Modelo,Color");
+        pw.println("Cané,Nombre,Placa,Carrera");
 
         // guradrr los datos
         for (Usuarios u : usuario) {
             
-            pw.printf("%s,%s,%s,%s,%s,%s%n",
+            pw.printf("%s,%s,%s,%s%n",
                     
+                    n(u.getCarne()),
                     n(u.getNombre()),
-                    n(u.getProfesion()),
-                    n(u.getTipodeVehiculo()),
                     n(u.getPlaca()),
-                    n(u.getModelo()),
-                    n(u.getColor()));
+                    n(u.getCarrera()));
         }
 
         JOptionPane.showMessageDialog(this, "Guardado correctamente.");
@@ -240,84 +240,92 @@ public class CargarVehiculos extends javax.swing.JPanel {
 
     
     
-     public void cargarArchivo(File archivo) {
-         //FileReader fr= null;
-         BufferedReader br= null; //leeer linea por lenuia
+        public void cargarArchivo(File archivo) {
+            //FileReader fr= null;
+            BufferedReader br= null; //leeer linea por lenuia
          
-         usuario.clear();
-         
-         try{
-             
-             
-             //fr= new FileReader(archivo);    versiones viejas usar por cualquier cosa xd
-             //br= new BufferedReader(fr);
-             
-             
-             br = new BufferedReader(
-                new InputStreamReader(new FileInputStream(archivo), java.nio.charset.StandardCharsets.UTF_8));
-             
-             String linea;
-             boolean primera = true;
-             
-             while((linea= br.readLine())!=null){
-                 
-                 
-                 //quitar el bombom
-                 if (primera && !linea.isEmpty() && linea.charAt(0) == '\uFEFF') {
-                 linea = linea.substring(1);
-                 }
-                 
-                 // saltar los totulos 
-                if (primera) {
-                    String l = linea.toLowerCase();
-                    if (l.contains("nombre") && l.contains("profesion")) {
-                        primera = false;
-                        continue;
-                    }
-                    primera = false;
-                }
-                 
-                 Usuarios user= new Usuarios();
-                 
-                 String arreglo []= linea.split(",",-1); // el -1 para no elimiar los esapcios vacios
-                 if(arreglo.length>=6){
-                     user.setNombre(arreglo[0].trim());
-                     user.setProfesion(arreglo[1].trim());
-                     user.setTipodeVehiculo(arreglo[2].trim());
-                     user.setPlaca(arreglo[3].trim());
-                     user.setModelo(arreglo[4].trim());
-                     user.setColor(arreglo[5].trim());
-                     
-                     usuario.add(user);
-                     
-                     
-                 }
-             }
-             
-             
-            } catch (Exception ex) {
-           ex.printStackTrace();
-           
-       } finally {
-           try {
-               if (br != null) br.close();
-               
-           } catch (Exception ex) {
-               ex.printStackTrace();
-           }
-       }
+           usuario.clear();
 
-        llenartabla(); 
-        
-        
-     }
+          try {
+                br = new BufferedReader(new InputStreamReader(
+                        new FileInputStream(archivo), java.nio.charset.StandardCharsets.UTF_8));
+
+               
+                String header = br.readLine();
+                if (header == null) {
+                    throw new IOException("Vacio");  // lee la promera liena para encabezado
+                }
+
+               
+                if (!header.isEmpty() && header.charAt(0) == '\uFEFF') {   // quitar el bomms
+                    header = header.substring(1);
+                }
+
+                
+                String headerLow = header.toLowerCase().replace(" ", ""); // dejar en minuscula y sin espacos
+
+                if (headerLow.startsWith("placa,tipo_vehiculo,tipo_area")) {
+                    cargarvehiculos(br);
+                    llenarTablaVehiculos();
+                } else if (headerLow.startsWith("carne,nombre,placa,carrera")) {
+                    Cargarusuarios(br);
+                    llenartabla();
+                } else {
+                    throw new IOException("Encabezado no reconocido: " + header);
+                }
+
+            } catch (IOException ex) {
+                
+                JOptionPane.showMessageDialog(this, "Error al cargar: " + ex.getMessage());
+
+            } finally {
+
+                try { if (br != null) br.close();
+
+                } catch (IOException ignore) {}
+
+         
+            }
+
+                 }
+     
+     private void Cargarusuarios(BufferedReader br) throws IOException {
+        String linea;
+                while ((linea = br.readLine()) != null) {
+                    String[] a = linea.split(",", -1); // placa,ttipo_vehiculo,tipo_area
+                    
+            if (a.length >= 4) {
+                Usuarios u = new Usuarios();
+                u.setCarne(a[0].trim());
+                u.setNombre(a[1].trim());
+                u.setPlaca(a[2].trim());
+                u.setCarrera(a[3].trim());
+                usuario.add(u);
+        }
+    }
+}
+
+    private void cargarvehiculos(BufferedReader br) throws IOException {
+        String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] a = linea.split(",", -1); // placa,ttipo_vehiculo,tipo_area
+                
+            if (a.length >= 3) {
+                Vehiculos v = new Vehiculos();
+                v.setPlaca(a[0].trim());
+                v.setTipoVehiculo(a[1].trim());
+                v.setTipoArea(a[2].trim());
+                vehiculos.add(v);
+            }
+        }
+    }
      
      public void llenartabla() {
          
         DefaultTableModel md = new DefaultTableModel(
                 
                 
-            new String[]{"Nombre","Profesion","Tipo de vehiculo","Placa","Modelo","Color"}, 0
+            new String[]{"Carné","Nombre","Placa","Carrera"}, 0
                 
                 
         );
@@ -328,17 +336,33 @@ public class CargarVehiculos extends javax.swing.JPanel {
             
             md.addRow(new Object[]{
                 
+                uss.getCarne(),
                 uss.getNombre(),
-                uss.getProfesion(),
-                uss.getTipodeVehiculo(),
                 uss.getPlaca(),
-                uss.getModelo(),
-                uss.getColor()
+                uss.getCarrera(),
               });
            }
 
            Tablita.setModel(md);
        }
+     
+     private void llenarTablaVehiculos() {
+         
+    DefaultTableModel md = new DefaultTableModel(
+            
+            new String[]{"placa", "tipo_vehiculo", "tipo_area"}, 0);
+
+                for (Vehiculos v : vehiculos) {
+                    
+                    md.addRow(new Object[]{
+                        v.getPlaca(), 
+                        v.getTipoVehiculo(), 
+                        v.getTipoArea() 
+                    });
+                }
+                
+             Tablita.setModel(md);
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnCargar;

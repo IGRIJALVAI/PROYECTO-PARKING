@@ -13,11 +13,9 @@ import java.util.List;
  */
 public class Usuarios {
     String nombre;
-    String profesion;
-    String modelo ;
-    String tipodeVehiculo;
-    String color;
-    String placa ;
+    String Carne;
+    String Placa ;
+    String Carrera;
     
      private static final List<Usuarios> listaglobal = new ArrayList<>();
 
@@ -29,46 +27,33 @@ public class Usuarios {
         this.nombre = nombre;
     }
 
-    public String getProfesion() {
-        return profesion;
+    public String getCarne() {
+        return Carne;
     }
 
-    public void setProfesion(String profesion) {
-        this.profesion = profesion;
-    }
-
-    public String getModelo() {
-        return modelo;
-    }
-
-    public void setModelo(String modelo) {
-        this.modelo = modelo;
-    }
-
-    public String getTipodeVehiculo() {
-        return tipodeVehiculo;
-    }
-
-    public void setTipodeVehiculo(String tipodeVehiculo) {
-        this.tipodeVehiculo = tipodeVehiculo;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
+    public void setCarne(String Carne) {
+        this.Carne = Carne;
     }
 
     public String getPlaca() {
-        return placa;
+        return Placa;
     }
 
-    public void setPlaca(String placa) {
-        this.placa = placa;
+    public void setPlaca(String Placa) {
+        this.Placa = Placa;
     }
-   
+
+    public String getCarrera() {
+        return Carrera;
+    }
+
+    public void setCarrera(String Carrera) {
+        this.Carrera = Carrera;
+    }
+
+    
+    
+    
     
       // de el array globall
     public static void agregarUsuario(Usuarios u) {
