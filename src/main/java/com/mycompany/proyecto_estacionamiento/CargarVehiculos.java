@@ -92,7 +92,7 @@ public class CargarVehiculos extends javax.swing.JPanel {
             }
         });
 
-        BtnSubir.setText("Crear nuevo archivo");
+        BtnSubir.setText("Subir datos");
         BtnSubir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnSubirActionPerformed(evt);
@@ -163,49 +163,93 @@ public class CargarVehiculos extends javax.swing.JPanel {
     private void BtnSubirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSubirActionPerformed
         // TODO add your handling code here:
         
-                                                     
-        JFileChooser selector = new JFileChooser();
-
-        selector.setSelectedFile(new File("usuarios.csv")); // nonbre del archvi quye se guardo
-
-        int resultado = selector.showSaveDialog(this);
-        
-        if (resultado == JFileChooser.APPROVE_OPTION) {
-            File archivo = selector.getSelectedFile();
-
-        
-        if (!archivo.getName().toLowerCase().endsWith(".csv")) { // verificarr que sea cvcvs
-
-            archivo = new File(archivo.getAbsolutePath() + ".csv");
-        }
-
-        guardarArchivoCSV(archivo);
-    }  
+                                                      
     }//GEN-LAST:event_BtnSubirActionPerformed
 
     private void BtnGuardarDatossActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarDatossActionPerformed
         // TODO add your handling code here:
                                                         
         
-        Usuarios.limpiarLista(); //limpiar antes de todo
+            Usuarios.limpiarLista();
+            vehiculos.clear();
+            areas.clear();
+            spots.clear();
 
-        DefaultTableModel model = (DefaultTableModel) Tablita.getModel();
+            DefaultTableModel model = (DefaultTableModel) Tablita.getModel();
 
-        for (int i = 0; i < model.getRowCount(); i++) {
-            Usuarios u = new Usuarios();
             
-            u.setCarne(String.valueOf(model.getValueAt(i, 0)));
-            u.setNombre(String.valueOf(model.getValueAt(i, 1)));
-            u.setPlaca(String.valueOf(model.getValueAt(i, 2)));
-            u.setCarrera(String.valueOf(model.getValueAt(i, 3)));
-           
+            String[] columnas = new String[model.getColumnCount()]; //leer encabezads
+            for (int i = 0; i < model.getColumnCount(); i++) {
+                columnas[i] = model.getColumnName(i).toLowerCase().replace(" ", "");
+            }
+            String headerLow = String.join(",", columnas);  // crea una linea 
+            
+            
+            if (headerLow.startsWith("carne,nombre,placa,carrera")) { //verifia encabeza
+                
+                
+                
+                
+                
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Usuarios u = new Usuarios();
+                    u.setCarne(String.valueOf(model.getValueAt(i, 0)));
+                    u.setNombre(String.valueOf(model.getValueAt(i, 1)));
+                    u.setPlaca(String.valueOf(model.getValueAt(i, 2)));
+                    u.setCarrera(String.valueOf(model.getValueAt(i, 3)));
+                    Usuarios.agregarUsuario(u);
+                }
+                JOptionPane.showMessageDialog(this, "Usuarios guardados ");
 
+            } else if (headerLow.startsWith("placa, tipo_vehiculo, tipo_area")) {//guarda vehichulos
+                
+                
+         
+               
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Vehiculos v = new Vehiculos();
+                    v.setPlaca(String.valueOf(model.getValueAt(i, 0)));
+                    v.setTipoVehiculo(String.valueOf(model.getValueAt(i, 1)));
+                    v.setTipoArea(String.valueOf(model.getValueAt(i, 2)));
+                    vehiculos.add(v);
+                }
+                JOptionPane.showMessageDialog(this, "Vehiculos guardados");
 
-            Usuarios.agregarUsuario(u); // se guarda eb la  global
-        }
+            } else if (headerLow.startsWith("area_id, nombre, capacidad, tipo_vehiculo")) {//guardar area
+             
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Areas a = new Areas();
+                    a.IdArea = String.valueOf(model.getValueAt(i, 0));
+                    a.nombreA = String.valueOf(model.getValueAt(i, 1));
+                    a.capacidad = String.valueOf(model.getValueAt(i, 2));
+                    a.TipoVehiculo = String.valueOf(model.getValueAt(i, 3));
+                    areas.add(a);
+                }
+                JOptionPane.showMessageDialog(this, "Areas guardadas ");
 
-        JOptionPane.showMessageDialog(this,
-            "Guadardados existosamente");
+            } else if (headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status") ||
+                       headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status")) {
+                
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Spots s = new Spots();
+                    try {
+                        
+                        if (headerLow.startsWith("idspots"))
+                            s.IdSpots = String.valueOf(model.getValueAt(i, 0));
+                        else
+                            s.IdSpots = String.valueOf(model.getValueAt(i, 0));
+                    } catch (Exception e) {}
+                    s.IdArea = String.valueOf(model.getValueAt(i, 1));
+                    s.TipoVehiculo = String.valueOf(model.getValueAt(i, 2));
+                    s.Status = String.valueOf(model.getValueAt(i, 3));
+                    spots.add(s);
+                }
+                JOptionPane.showMessageDialog(this, "Spots guardados");
+
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "No se reconoce el tipo de dato");
+            }
     
     }//GEN-LAST:event_BtnGuardarDatossActionPerformed
 

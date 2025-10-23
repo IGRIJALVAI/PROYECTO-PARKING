@@ -58,7 +58,7 @@ public class Vehiculos {
         listaglobal2.add(u);
     }
 
-    public static List<Vehiculos> getListaUsuarios() {
+    public static List<Vehiculos> getListaVehiculos() {
         return listaglobal2;
     }
 

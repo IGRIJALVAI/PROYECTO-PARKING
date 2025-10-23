@@ -115,7 +115,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="BtnSubir">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Crear nuevo archivo"/>
+        <Property name="text" type="java.lang.String" value="Subir datos"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BtnSubirActionPerformed"/>
