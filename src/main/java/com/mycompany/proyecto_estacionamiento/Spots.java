@@ -8,35 +8,27 @@ package com.mycompany.proyecto_estacionamiento;
  *
  * @author grija
  */
-public class Areas {
+public class Spots {
     
+    String IdSpots ;
     String IdArea ;
-    String nombreA ;
-    String capacidad ;
     String TipoVehiculo ;
+    String Status ;
 
-    public String getId() {
+    public String getIdSpots() {
+        return IdSpots;
+    }
+
+    public void setIdSpots(String IdSpots) {
+        this.IdSpots = IdSpots;
+    }
+
+    public String getIdArea() {
         return IdArea;
     }
 
-    public void setId(String Id) {
-        this.IdArea = Id;
-    }
-
-    public String getNombreA() {
-        return nombreA;
-    }
-
-    public void setNombreA(String nombreA) {
-        this.nombreA = nombreA;
-    }
-
-    public String getCapacidad() {
-        return capacidad;
-    }
-
-    public void setCapacidad(String capacidad) {
-        this.capacidad = capacidad;
+    public void setIdArea(String IdArea) {
+        this.IdArea = IdArea;
     }
 
     public String getTipoVehiculo() {
@@ -46,6 +38,13 @@ public class Areas {
     public void setTipoVehiculo(String TipoVehiculo) {
         this.TipoVehiculo = TipoVehiculo;
     }
-    
+
+    public String getStatus() {
+        return Status;
+    }
+
+    public void setStatus(String Status) {
+        this.Status = Status;
+    }
     
 }

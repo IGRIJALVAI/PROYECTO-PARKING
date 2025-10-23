@@ -33,6 +33,8 @@ public class CargarVehiculos extends javax.swing.JPanel {
      */
        List<Usuarios> usuario = new ArrayList<>();
        List<Vehiculos> vehiculos = new ArrayList<>();
+       List<Areas> areas = new ArrayList<>();
+       List<Spots> spots = new ArrayList<>();
 
 
     public CargarVehiculos() {
@@ -264,15 +266,31 @@ public class CargarVehiculos extends javax.swing.JPanel {
                 
                 String headerLow = header.toLowerCase().replace(" ", ""); // dejar en minuscula y sin espacos
 
-                if (headerLow.startsWith("placa,tipo_vehiculo,tipo_area")) {
-                    cargarvehiculos(br);
-                    llenarTablaVehiculos();
-                } else if (headerLow.startsWith("carne,nombre,placa,carrera")) {
-                    Cargarusuarios(br);
-                    llenartabla();
-                } else {
-                    throw new IOException("Encabezado no reconocido: " + header);
-                }
+                  if (headerLow.startsWith("placa,tipo_vehiculo,tipo_area")) { //filtro de emcabezado
+                        
+                        cargarvehiculos(br);        
+                        llenarTablaVehiculos();    
+                        
+                    } else if (headerLow.startsWith("carne,nombre,placa,carrera")) {
+                        
+                        
+                        usuario.clear();            
+                        Cargarusuarios(br);        
+                        llenartabla();             
+                    } else if (headerLow.startsWith("id,nombrea,capacidad,tipovehiculo")) {
+                        
+                       
+                        cargarAreas(br);            
+                        llenarTablaAreas();    
+                        
+                    } else if (headerLow.startsWith("spot_id,área_id,tipo_vehiculo,status")) {
+                        
+                        cargarSpots(br);
+                        llenarTablaSpots();
+                        
+                    }else {
+                        throw new IOException("Encabezado no reconocido: " + header);
+                    }
 
             } catch (IOException ex) {
                 
@@ -290,6 +308,8 @@ public class CargarVehiculos extends javax.swing.JPanel {
                  }
      
      private void Cargarusuarios(BufferedReader br) throws IOException {
+         
+         usuario.clear();
         String linea;
                 while ((linea = br.readLine()) != null) {
                     String[] a = linea.split(",", -1); // placa,ttipo_vehiculo,tipo_area
@@ -301,12 +321,18 @@ public class CargarVehiculos extends javax.swing.JPanel {
                 u.setPlaca(a[2].trim());
                 u.setCarrera(a[3].trim());
                 usuario.add(u);
-        }
-    }
-}
+                        }
+                    }
+                }
+     
+     
 
     private void cargarvehiculos(BufferedReader br) throws IOException {
-        String linea;
+        
+        vehiculos.clear();
+        
+        
+         String linea;
             while ((linea = br.readLine()) != null) {
                 String[] a = linea.split(",", -1); // placa,ttipo_vehiculo,tipo_area
                 
@@ -319,6 +345,48 @@ public class CargarVehiculos extends javax.swing.JPanel {
             }
         }
     }
+    
+    private void cargarAreas(BufferedReader br) throws IOException {
+         
+            areas.clear();
+            
+            
+            String linea;
+            
+                    while ((linea = br.readLine()) != null) {
+                        
+                        String[] a = linea.split(",", -1); // mantener espcaops
+                        if (a.length >= 4) {
+                            
+                            Areas ar = new Areas();
+                            ar.IdArea = a[0].trim();
+                            ar.nombreA = a[1].trim();
+                            ar.capacidad = a[2].trim();
+                            ar.TipoVehiculo = a[3].trim();
+                            areas.add(ar);
+                }
+    }
+}
+    
+    
+    private void cargarSpots(BufferedReader br) throws IOException {
+        
+    spots.clear();
+    String linea;
+    while ((linea = br.readLine()) != null) {
+        String[] a = linea.split(",", -1);
+        if (a.length >= 4) {
+            Spots s = new Spots();
+            s.IdSpots = a[0].trim();
+            s.IdArea = a[1].trim();
+            s.TipoVehiculo = a[2].trim();
+            s.Status = a[3].trim();
+            spots.add(s);
+        }
+    }
+}
+
+    
      
      public void llenartabla() {
          
@@ -350,7 +418,7 @@ public class CargarVehiculos extends javax.swing.JPanel {
          
     DefaultTableModel md = new DefaultTableModel(
             
-            new String[]{"placa", "tipo_vehiculo", "tipo_area"}, 0);
+            new String[]{"Placa", "Tipo de Vehiculo", "Tipo de Area"}, 0);
 
                 for (Vehiculos v : vehiculos) {
                     
@@ -363,6 +431,39 @@ public class CargarVehiculos extends javax.swing.JPanel {
                 
              Tablita.setModel(md);
 }
+     
+     
+     private void llenarTablaAreas() {
+         
+         
+    DefaultTableModel md = new DefaultTableModel(
+            
+        new String[]{"Id","Area","Capacidad","TipoVehiculo"}, 0
+        );
+    
+      for (Areas a : areas) {
+          
+        md.addRow(new Object[]{ a.IdArea, a.nombreA, a.capacidad, a.TipoVehiculo });
+       
+      }
+    
+    
+    Tablita.setModel(md);
+    } 
+     
+     
+     private void llenarTablaSpots() {
+         
+            DefaultTableModel md = new DefaultTableModel(
+                new String[]{" ID Spot", "ID Area", "tipoDE vehiculo", "Status"}, 0
+            );
+            for (Spots s : spots) {
+                md.addRow(new Object[]{ s.IdSpots, s.IdArea, s.TipoVehiculo, s.Status });
+            }
+            Tablita.setModel(md);
+}
+
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnCargar;
