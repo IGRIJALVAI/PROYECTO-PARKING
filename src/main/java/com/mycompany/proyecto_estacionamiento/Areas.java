@@ -4,6 +4,9 @@
  */
 package com.mycompany.proyecto_estacionamiento;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author grija
@@ -14,6 +17,8 @@ public class Areas {
     String nombreA ;
     String capacidad ;
     String TipoVehiculo ;
+    
+    private static final List<Areas> listagloba2 = new ArrayList<>();
 
     public String getId() {
         return IdArea;
@@ -46,6 +51,36 @@ public class Areas {
     public void setTipoVehiculo(String TipoVehiculo) {
         this.TipoVehiculo = TipoVehiculo;
     }
+    
+    
+   // de el array globall
+    public static void agregarrusuario(Areas u) {
+        
+        listagloba2.add(u);
+    }
+
+    public static List<Areas> getListaAreases() {
+        return listagloba2;
+    }
+
+    public static void limpiarLista() {
+        listagloba2.clear();
+    }
+
+    // bsucar por placa
+    public static Areas buscarPorArea(String placa) {
+        for (Areas u : listagloba2) {
+            if (u.getNombreA().equalsIgnoreCase(placa)) {
+                return u;
+            }
+        }
+        return null;
+    } 
+    
+    
+    
+    
+    
     
     
 }
