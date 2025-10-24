@@ -20,11 +20,11 @@ public class Areas {
     
   
 
-    public String getId() {
+    public String getIdArea() {
         return IdArea;
     }
 
-    public void setId(String Id) {
+    public void setIdArea(String Id) {
         this.IdArea = Id;
     }
 

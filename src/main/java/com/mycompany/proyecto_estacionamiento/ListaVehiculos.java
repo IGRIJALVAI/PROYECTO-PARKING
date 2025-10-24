@@ -4,6 +4,9 @@
  */
 package com.mycompany.proyecto_estacionamiento;
 
+import javax.swing.JOptionPane;
+
+
 /**
  *
  * @author grija
@@ -14,9 +17,86 @@ public class ListaVehiculos extends javax.swing.JPanel {
      * Creates new form ListaVehiculos
      */
     public ListaVehiculos() {
-        initComponents();
+           initComponents();  
+        
+        Combox.setModel(new javax.swing.DefaultComboBoxModel<>( new String[]{"Usuarios", "Vehículos", "Áreas", "Spots"}));
+         
+         
+        Combox.setSelectedIndex(0);// tabla no editable 
+        Tablitaa.setAutoCreateRowSorter(true);
+        Llenartabla();
     }
+        
+    
+    
+    public void Llenartabla() {
+        
+    String sel = (String) Combox.getSelectedItem();
+    if (sel == null) return;
+    switch (sel) {
+        case "Usuarios"  :
+            mostrarUsuarios();
+        case "Vehículos" : 
+            mostrarVehiculos();
+        case "Áreas"     : 
+            mostrarAreas();
+        case "Spots"   : 
+            mostrarSpots();
+    }
+}
 
+
+    static class editartabla extends javax.swing.table.DefaultTableModel {
+        
+        editartabla(String[] cols) { super(cols, 0); }
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return true; //  editar 
+        }
+    }
+    
+    private String s(Object o){ return o==null? "" : o.toString();
+        }
+    
+    public void mostrarUsuarios() {
+        
+    editartabla md = new editartabla(new String[]{"Carne","Nombre","Placa","Carrera"});
+    
+    for (Usuarios u : DatosCentrales.USUARIOS) {
+        md.addRow(new Object[]{ s(u.getCarne()), s(u.getNombre()), s(u.getPlaca()), s(u.getCarrera()) });
+    }
+    Tablitaa.setModel(md);
+}
+
+    public void mostrarVehiculos() {
+        
+    editartabla md = new editartabla(new String[]{"Placa","Tipo Vehiculo","Tipo area"});
+    for (Vehiculos v : DatosCentrales.VEHICULOS) {
+        
+        md.addRow(new Object[]{ s(v.getPlaca()), s(v.getTipoVehiculo()), s(v.getTipoArea()) });
+    }
+    Tablitaa.setModel(md);
+}
+
+    public void mostrarAreas() {
+        
+    editartabla md = new editartabla(new String[]{"ID Area","Nombre area","Capacidad","Tipo Vehiculo"});
+    for (Areas a : DatosCentrales.AREAS) {
+        md.addRow(new Object[]{ s(a.getIdArea()), s(a.getNombreA()), s(a.getCapacidad()), s(a.getTipoVehiculo()) });
+    }
+    Tablitaa.setModel(md);
+}
+
+    public void mostrarSpots() {
+        
+    editartabla md = new editartabla(new String[]{"ID Spots","ID Area","Tipo Vehiculo","Estado"});
+    for (Spots sp : DatosCentrales.SPOTS) {
+        
+        md.addRow(new Object[]{ s(sp.getIdSpots()), s(sp.getIdArea()), s(sp.getTipoVehiculo()), s(sp.getStatus()) });
+    }
+    Tablitaa.setModel(md);
+}
+  
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -28,16 +108,16 @@ public class ListaVehiculos extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        Tablitaa = new javax.swing.JTable();
+        Combox = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        BtnGuardar = new javax.swing.JButton();
+        BtnEliminar = new javax.swing.JButton();
+        BtnModificar = new javax.swing.JButton();
 
         jLabel1.setText("Datos Generales");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        Tablitaa.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -48,17 +128,27 @@ public class ListaVehiculos extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(Tablitaa);
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        Combox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        Combox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ComboxActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Seleccione el dato que desa obeservar");
 
-        jButton1.setText("jButton1");
+        BtnGuardar.setText("Guardar");
+        BtnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnGuardarActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("jButton2");
+        BtnEliminar.setText("Eliminar");
 
-        jButton3.setText("jButton3");
+        BtnModificar.setText("Modificar");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -67,23 +157,21 @@ public class ListaVehiculos extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(23, 23, 23)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(BtnGuardar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton2)
-                        .addGap(48, 48, 48)
-                        .addComponent(jButton3)
-                        .addGap(19, 19, 19))))
+                        .addComponent(BtnModificar)
+                        .addGap(41, 41, 41)
+                        .addComponent(BtnEliminar)))
+                .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(31, Short.MAX_VALUE)
+                .addContainerGap(24, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addGap(36, 36, 36)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(Combox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(55, 55, 55))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel1)
@@ -97,27 +185,94 @@ public class ListaVehiculos extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Combox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3))
+                    .addComponent(BtnGuardar)
+                    .addComponent(BtnEliminar)
+                    .addComponent(BtnModificar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void ComboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ComboxActionPerformed
+        // TODO add your handling code here:
+                                             
+    Llenartabla();
+
+
+    }//GEN-LAST:event_ComboxActionPerformed
+
+    private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
+        // TODO add your handling code here:                                          
+    String sel = (String) Combox.getSelectedItem();
+    javax.swing.table.TableModel model = Tablitaa.getModel();
+
+    if (null != sel) switch (sel) {
+            case "Usuarios":
+                DatosCentrales.USUARIOS.clear();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Usuarios u = new Usuarios();
+                    u.setCarne((String) model.getValueAt(i, 0));
+                    u.setNombre((String) model.getValueAt(i, 1));
+                    u.setPlaca((String) model.getValueAt(i, 2));
+                    u.setCarrera((String) model.getValueAt(i, 3));
+                    DatosCentrales.USUARIOS.add(u);
+                }       
+                break;
+                
+            case "Vehículos":
+                DatosCentrales.VEHICULOS.clear();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Vehiculos v = new Vehiculos();
+                    v.setPlaca((String) model.getValueAt(i, 0));
+                    v.setTipoVehiculo((String) model.getValueAt(i, 1));
+                    v.setTipoArea((String) model.getValueAt(i, 2));
+                    DatosCentrales.VEHICULOS.add(v);
+                }       
+                break;
+            case "Áreas":
+                DatosCentrales.AREAS.clear();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Areas a = new Areas();
+                    a.setIdArea((String) model.getValueAt(i, 0));
+                    a.setNombreA((String) model.getValueAt(i, 1));
+                    a.setCapacidad((String) model.getValueAt(i, 2));
+                    a.setTipoVehiculo((String) model.getValueAt(i, 3));
+                    DatosCentrales.AREAS.add(a);
+                }       
+                break;
+            case "Spots":
+                DatosCentrales.SPOTS.clear();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    Spots s = new Spots();
+                    s.setIdSpots((String) model.getValueAt(i, 0));
+                    s.setIdArea((String) model.getValueAt(i, 1));
+                    s.setTipoVehiculo((String) model.getValueAt(i, 2));
+                    s.setStatus((String) model.getValueAt(i, 3));
+                    DatosCentrales.SPOTS.add(s);
+                }      
+                break;
+            default:
+                break;
+        }
+
+    JOptionPane.showMessageDialog(this, "Cambios guardados en memoria");
+
+
+    }//GEN-LAST:event_BtnGuardarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JButton BtnEliminar;
+    private javax.swing.JButton BtnGuardar;
+    private javax.swing.JButton BtnModificar;
+    private javax.swing.JComboBox<String> Combox;
+    private javax.swing.JTable Tablitaa;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
 }
