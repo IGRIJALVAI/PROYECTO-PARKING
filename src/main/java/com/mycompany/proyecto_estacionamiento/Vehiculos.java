@@ -4,8 +4,6 @@
  */
 package com.mycompany.proyecto_estacionamiento;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -17,7 +15,7 @@ public class Vehiculos {
     String TipoVehiculo ;
     String TipoArea ;
 
-    private static final List<Vehiculos> listaglobal2 = new ArrayList<>();
+
     
     
     public String getPlaca() {
@@ -52,28 +50,6 @@ public class Vehiculos {
         this.TipoArea = TipoArea;
     }
     
-     // de el array globall
-    public static void agregarUsuario(Vehiculos u) {
-        
-        listaglobal2.add(u);
-    }
-
-    public static List<Vehiculos> getListaVehiculos() {
-        return listaglobal2;
-    }
-
-    public static void limpiarLista() {
-        listaglobal2.clear();
-    }
-
-    // bsucar por placa
-    public static Vehiculos buscarPorPlaca(String placa) {
-        for (Vehiculos u : listaglobal2) {
-            if (u.getPlaca().equalsIgnoreCase(placa)) {
-                return u;
-            }
-        }
-        return null;
-    }
+ 
     
 }

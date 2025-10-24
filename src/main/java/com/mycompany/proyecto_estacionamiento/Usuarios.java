@@ -4,8 +4,6 @@
  */
 package com.mycompany.proyecto_estacionamiento;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -17,7 +15,6 @@ public class Usuarios {
     String Placa ;
     String Carrera;
     
-     private static final List<Usuarios> listaglobal = new ArrayList<>();
 
     public String getNombre() {
         return nombre;
@@ -50,33 +47,5 @@ public class Usuarios {
     public void setCarrera(String Carrera) {
         this.Carrera = Carrera;
     }
-
-    
-    
-    
-    
-      // de el array globall
-    public static void agregarUsuario(Usuarios u) {
-        
-        listaglobal.add(u);
-    }
-
-    public static List<Usuarios> getListaUsuarios() {
-        return listaglobal;
-    }
-
-    public static void limpiarLista() {
-        listaglobal.clear();
-    }
-
-    // bsucar por nombre
-    public static Usuarios buscarPorNombre(String nombre) {
-        for (Usuarios u : listaglobal) {
-            if (u.getNombre().equalsIgnoreCase(nombre)) {
-                return u;
-            }
-        }
-        return null;
-    }
-    
+  
 }
