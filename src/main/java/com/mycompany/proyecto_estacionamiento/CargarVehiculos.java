@@ -170,86 +170,19 @@ public class CargarVehiculos extends javax.swing.JPanel {
         // TODO add your handling code here:
                                                         
         
-            Usuarios.limpiarLista();
-            vehiculos.clear();
-            areas.clear();
-            spots.clear();
-
-            DefaultTableModel model = (DefaultTableModel) Tablita.getModel();
-
+            DatosCentrales.USUARIOS.clear();
+            DatosCentrales.USUARIOS.addAll(usuario);
             
-            String[] columnas = new String[model.getColumnCount()]; //leer encabezads
-            for (int i = 0; i < model.getColumnCount(); i++) {
-                columnas[i] = model.getColumnName(i).toLowerCase().replace(" ", "");
-            }
-            String headerLow = String.join(",", columnas);  // crea una linea 
+
+            DatosCentrales.VEHICULOS.clear();
+            DatosCentrales.VEHICULOS.addAll(vehiculos);
             
-            
-            if (headerLow.startsWith("carne,nombre,placa,carrera")) { //verifia encabeza
-                
-                
-                
-                
-                
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Usuarios u = new Usuarios();
-                    u.setCarne(String.valueOf(model.getValueAt(i, 0)));
-                    u.setNombre(String.valueOf(model.getValueAt(i, 1)));
-                    u.setPlaca(String.valueOf(model.getValueAt(i, 2)));
-                    u.setCarrera(String.valueOf(model.getValueAt(i, 3)));
-                    Usuarios.agregarUsuario(u);
-                }
-                JOptionPane.showMessageDialog(this, "Usuarios guardados ");
+            DatosCentrales.AREAS.clear();           
+            DatosCentrales.AREAS.addAll(areas);
 
-            } else if (headerLow.startsWith("placa, tipo_vehiculo, tipo_area")) {//guarda vehichulos
-                
-                
-         
-               
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Vehiculos v = new Vehiculos();
-                    v.setPlaca(String.valueOf(model.getValueAt(i, 0)));
-                    v.setTipoVehiculo(String.valueOf(model.getValueAt(i, 1)));
-                    v.setTipoArea(String.valueOf(model.getValueAt(i, 2)));
-                    vehiculos.add(v);
-                }
-                JOptionPane.showMessageDialog(this, "Vehiculos guardados");
-
-            } else if (headerLow.startsWith("area_id, nombre, capacidad, tipo_vehiculo")) {//guardar area
-             
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Areas a = new Areas();
-                    a.IdArea = String.valueOf(model.getValueAt(i, 0));
-                    a.nombreA = String.valueOf(model.getValueAt(i, 1));
-                    a.capacidad = String.valueOf(model.getValueAt(i, 2));
-                    a.TipoVehiculo = String.valueOf(model.getValueAt(i, 3));
-                    areas.add(a);
-                }
-                JOptionPane.showMessageDialog(this, "Areas guardadas ");
-
-            } else if (headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status") ||
-                       headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status")) {
-                
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Spots s = new Spots();
-                    try {
-                        
-                        if (headerLow.startsWith("idspots"))
-                            s.IdSpots = String.valueOf(model.getValueAt(i, 0));
-                        else
-                            s.IdSpots = String.valueOf(model.getValueAt(i, 0));
-                    } catch (Exception e) {}
-                    s.IdArea = String.valueOf(model.getValueAt(i, 1));
-                    s.TipoVehiculo = String.valueOf(model.getValueAt(i, 2));
-                    s.Status = String.valueOf(model.getValueAt(i, 3));
-                    spots.add(s);
-                }
-                JOptionPane.showMessageDialog(this, "Spots guardados");
-
-            } else {
-                JOptionPane.showMessageDialog(this,
-                    "No se reconoce el tipo de dato");
-            }
+            DatosCentrales.SPOTS.clear();            
+            DatosCentrales.SPOTS.addAll(spots);
+             JOptionPane.showMessageDialog(null,"Datos guardados en memoria");
     
     }//GEN-LAST:event_BtnGuardarDatossActionPerformed
 
