@@ -34,14 +34,10 @@ public class ListaVehiculos extends javax.swing.JPanel {
     String sel = (String) Combox.getSelectedItem();
     if (sel == null) return;
     switch (sel) {
-        case "Usuarios"  :
-            mostrarUsuarios();
-        case "Vehículos" : 
-            mostrarVehiculos();
-        case "Áreas"     : 
-            mostrarAreas();
-        case "Spots"   : 
-            mostrarSpots();
+         case "Usuarios"  -> mostrarUsuarios();// reule swich 
+        case "Vehículos" -> mostrarVehiculos();
+        case "Áreas"     -> mostrarAreas();
+        case "Spots"     -> mostrarSpots();
     }
 }
 
@@ -55,7 +51,9 @@ public class ListaVehiculos extends javax.swing.JPanel {
         }
     }
     
-    private String s(Object o){ return o==null? "" : o.toString();
+    private String s(Object o){ 
+        return o==null? "" : 
+                o.toString();
         }
     
     public void mostrarUsuarios() {
@@ -65,8 +63,8 @@ public class ListaVehiculos extends javax.swing.JPanel {
     for (Usuarios u : DatosCentrales.USUARIOS) {
         md.addRow(new Object[]{ s(u.getCarne()), s(u.getNombre()), s(u.getPlaca()), s(u.getCarrera()) });
     }
-    Tablitaa.setModel(md);
-}
+        Tablitaa.setModel(md);
+     }
 
     public void mostrarVehiculos() {
         
@@ -75,8 +73,8 @@ public class ListaVehiculos extends javax.swing.JPanel {
         
         md.addRow(new Object[]{ s(v.getPlaca()), s(v.getTipoVehiculo()), s(v.getTipoArea()) });
     }
-    Tablitaa.setModel(md);
-}
+              Tablitaa.setModel(md);
+         }
 
     public void mostrarAreas() {
         
@@ -84,8 +82,8 @@ public class ListaVehiculos extends javax.swing.JPanel {
     for (Areas a : DatosCentrales.AREAS) {
         md.addRow(new Object[]{ s(a.getIdArea()), s(a.getNombreA()), s(a.getCapacidad()), s(a.getTipoVehiculo()) });
     }
-    Tablitaa.setModel(md);
-}
+         Tablitaa.setModel(md);
+     }
 
     public void mostrarSpots() {
         
@@ -93,8 +91,9 @@ public class ListaVehiculos extends javax.swing.JPanel {
     for (Spots sp : DatosCentrales.SPOTS) {
         
         md.addRow(new Object[]{ s(sp.getIdSpots()), s(sp.getIdArea()), s(sp.getTipoVehiculo()), s(sp.getStatus()) });
+        
     }
-    Tablitaa.setModel(md);
+               Tablitaa.setModel(md);
 }
   
     /**
@@ -147,8 +146,18 @@ public class ListaVehiculos extends javax.swing.JPanel {
         });
 
         BtnEliminar.setText("Eliminar");
+        BtnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnEliminarActionPerformed(evt);
+            }
+        });
 
-        BtnModificar.setText("Modificar");
+        BtnModificar.setText("Agregar");
+        BtnModificar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnModificarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -162,7 +171,7 @@ public class ListaVehiculos extends javax.swing.JPanel {
                         .addComponent(BtnGuardar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(BtnModificar)
-                        .addGap(41, 41, 41)
+                        .addGap(52, 52, 52)
                         .addComponent(BtnEliminar)))
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -207,62 +216,126 @@ public class ListaVehiculos extends javax.swing.JPanel {
 
     private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
         // TODO add your handling code here:                                          
-    String sel = (String) Combox.getSelectedItem();
-    javax.swing.table.TableModel model = Tablitaa.getModel();
+      if (Tablitaa.isEditing()) {
+        Tablitaa.getCellEditor().stopCellEditing();
+    }
 
-    if (null != sel) switch (sel) {
-            case "Usuarios":
-                DatosCentrales.USUARIOS.clear();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Usuarios u = new Usuarios();
-                    u.setCarne((String) model.getValueAt(i, 0));
-                    u.setNombre((String) model.getValueAt(i, 1));
-                    u.setPlaca((String) model.getValueAt(i, 2));
-                    u.setCarrera((String) model.getValueAt(i, 3));
-                    DatosCentrales.USUARIOS.add(u);
-                }       
-                break;
+    // 🔸 2. Tomar el modelo actualizado
+    javax.swing.table.TableModel model = Tablitaa.getModel();
+    int sel = Combox.getSelectedIndex(); // selecciona que archuivo quire 
+
+    switch (sel) {
+        case 0 -> {
+            DatosCentrales.USUARIOS.clear();
+            
+            for (int i = 0; i < model.getRowCount(); i++) {
                 
-            case "Vehículos":
-                DatosCentrales.VEHICULOS.clear();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Vehiculos v = new Vehiculos();
-                    v.setPlaca((String) model.getValueAt(i, 0));
-                    v.setTipoVehiculo((String) model.getValueAt(i, 1));
-                    v.setTipoArea((String) model.getValueAt(i, 2));
-                    DatosCentrales.VEHICULOS.add(v);
-                }       
-                break;
-            case "Áreas":
-                DatosCentrales.AREAS.clear();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Areas a = new Areas();
-                    a.setIdArea((String) model.getValueAt(i, 0));
-                    a.setNombreA((String) model.getValueAt(i, 1));
-                    a.setCapacidad((String) model.getValueAt(i, 2));
-                    a.setTipoVehiculo((String) model.getValueAt(i, 3));
-                    DatosCentrales.AREAS.add(a);
-                }       
-                break;
-            case "Spots":
-                DatosCentrales.SPOTS.clear();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    Spots s = new Spots();
-                    s.setIdSpots((String) model.getValueAt(i, 0));
-                    s.setIdArea((String) model.getValueAt(i, 1));
-                    s.setTipoVehiculo((String) model.getValueAt(i, 2));
-                    s.setStatus((String) model.getValueAt(i, 3));
-                    DatosCentrales.SPOTS.add(s);
-                }      
-                break;
-            default:
-                break;
+                Usuarios u = new Usuarios();
+              
+                u.setCarne(nz(model.getValueAt(i, 0)));
+                u.setNombre(nz(model.getValueAt(i, 1)));
+                u.setPlaca(nz(model.getValueAt(i, 2)));
+                u.setCarrera(nz(model.getValueAt(i, 3)));
+                
+                if (!u.getCarne().isEmpty() || !u.getNombre().isEmpty()) {
+                    DatosCentrales.USUARIOS.add(u);
+                }
+            }
+            
         }
 
+        case 1 -> { 
+            DatosCentrales.VEHICULOS.clear();
+           
+            for (int i = 0; i < model.getRowCount(); i++) {
+               
+                Vehiculos v = new Vehiculos();
+                v.setPlaca(nz(model.getValueAt(i, 0)));
+                v.setTipoVehiculo(nz(model.getValueAt(i, 1)));
+                v.setTipoArea(nz(model.getValueAt(i, 2)));
+                if (!v.getPlaca().isEmpty()) {
+                    DatosCentrales.VEHICULOS.add(v);
+                }
+            }
+            
+        }
+
+        case 2 -> { 
+            DatosCentrales.AREAS.clear();
+           
+            for (int i = 0; i < model.getRowCount(); i++) {
+             
+                Areas a = new Areas();
+                a.setIdArea(nz(model.getValueAt(i, 0)));
+                a.setNombreA(nz(model.getValueAt(i, 1)));
+                a.setCapacidad(nz(model.getValueAt(i, 2)));
+                a.setTipoVehiculo(nz(model.getValueAt(i, 3)));
+                if (!a.getIdArea().isEmpty()) {
+                    DatosCentrales.AREAS.add(a);
+                }
+            }
+            
+        }
+
+        case 3 -> { 
+            DatosCentrales.SPOTS.clear();
+            
+            for (int i = 0; i < model.getRowCount(); i++) {
+              
+                Spots s = new Spots();
+                s.setIdSpots(nz(model.getValueAt(i, 0)));
+                s.setIdArea(nz(model.getValueAt(i, 1)));
+                s.setTipoVehiculo(nz(model.getValueAt(i, 2)));
+                s.setStatus(nz(model.getValueAt(i, 3)));
+                if (!s.getIdSpots().isEmpty()) {
+                    DatosCentrales.SPOTS.add(s);
+                }
+            }
+            
+        }
+    }
+
     JOptionPane.showMessageDialog(this, "Cambios guardados en memoria");
+}
+
+        // Helper para evitar nulls
+        private String nz(Object o) {
+            return (o == null) ? "" : o.toString().trim();
 
 
     }//GEN-LAST:event_BtnGuardarActionPerformed
+
+    private void BtnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnEliminarActionPerformed
+        // TODO add your handling code here:
+         int fila = Tablitaa.getSelectedRow();
+         
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona una fila para eliminar.");
+            return;
+        }
+
+       
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Seguro que deseas eliminar esta fila?", "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION)
+            return;
+
+        
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) Tablitaa.getModel(); // Eliminar de la tabla
+        model.removeRow(fila);
+
+       
+        BtnGuardarActionPerformed(evt); // reutiliza el botón Guardar 
+
+        JOptionPane.showMessageDialog(this, "Fila eliminada correctamente.");
+        
+    }//GEN-LAST:event_BtnEliminarActionPerformed
+
+    private void BtnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnModificarActionPerformed
+        // TODO add your handling code here:
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) Tablitaa.getModel();
+        
+            model.addRow(new Object[]{"", "", "", ""}); // agrega fila sin nada
+    }//GEN-LAST:event_BtnModificarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
