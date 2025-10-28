@@ -19,10 +19,10 @@ public class ListaVehiculos extends javax.swing.JPanel {
     public ListaVehiculos() {
            initComponents();  
         
-        Combox.setModel(new javax.swing.DefaultComboBoxModel<>( new String[]{"Usuarios", "Vehículos", "Áreas", "Spots"}));
+        Combox.setModel(new javax.swing.DefaultComboBoxModel<>( new String[]{"Usuarios", "Vehículos", "Áreas", "Spots", "Usuarios y Vehiculos"}));
          
          
-        Combox.setSelectedIndex(0);// tabla no editable 
+        Combox.setSelectedIndex(0);// combo  no editable 
         Tablitaa.setAutoCreateRowSorter(true);
         Llenartabla();
     }
@@ -36,8 +36,9 @@ public class ListaVehiculos extends javax.swing.JPanel {
     switch (sel) {
          case "Usuarios"  -> mostrarUsuarios();// reule swich 
         case "Vehículos" -> mostrarVehiculos();
-        case "Áreas"     -> mostrarAreas();
-        case "Spots"     -> mostrarSpots();
+      case "Áreas"     -> mostrarAreas();
+         case "Spots"     -> mostrarSpots();
+          case "Usuarios y Vehiculos"  -> mostrarUsuariosConVehiculo();
     }
 }
 
@@ -47,7 +48,7 @@ public class ListaVehiculos extends javax.swing.JPanel {
         editartabla(String[] cols) { super(cols, 0); }
         @Override
         public boolean isCellEditable(int row, int col) {
-            return true; //  editar 
+            return true; //  editar las tabala
         }
     }
     
@@ -55,6 +56,15 @@ public class ListaVehiculos extends javax.swing.JPanel {
         return o==null? "" : 
                 o.toString();
         }
+    
+       
+
+            // elimina guiones/espacios y pasa a mayúsculas para empatar aunque vengan distinto
+            private String normPlaca(String s){
+                if (s == null) return "";
+                return s.replace("-", "").replace(" ", "").toUpperCase();
+            }
+
     
     public void mostrarUsuarios() {
         
@@ -94,7 +104,47 @@ public class ListaVehiculos extends javax.swing.JPanel {
         
     }
                Tablitaa.setModel(md);
+    }
+    
+       private void mostrarUsuariosConVehiculo() {
+    // 0) Si hay edición activa en la tabla, ciérrala para leer bien los datos
+                if (Tablitaa.isEditing()) {
+                    Tablitaa.getCellEditor().stopCellEditing();
+                }
+
+                // 1) Índice rápido: placa normalizada -> Vehiculos
+                java.util.Map<String, Vehiculos> idxVehPorPlaca = new java.util.HashMap<>();
+                for (Vehiculos v : DatosCentrales.VEHICULOS) {
+                    String p = normPlaca(v == null ? null : v.getPlaca());
+                    if (!p.isEmpty()) idxVehPorPlaca.put(p, v);
+                }
+
+                // 2) Modelo combinado
+                javax.swing.table.DefaultTableModel md = new javax.swing.table.DefaultTableModel(
+                    new String[]{"Carné","Nombre","Placa","Carrera","Tipo Vehículo","Tipo Área"}, 0
+                ){
+                    @Override public boolean isCellEditable(int r, int c){ return false; }
+                };
+
+                // 3) Unir Usuario + Vehículo por PLACA normalizada
+                for (Usuarios u : DatosCentrales.USUARIOS) {
+                    String carne   = nz(u.getCarne());
+                    String nombre  = nz(u.getNombre());
+                    String placa   = nz(u.getPlaca());
+                    String carrera = nz(u.getCarrera());
+
+                    Vehiculos v = idxVehPorPlaca.get(normPlaca(placa));
+                    String tipoVeh = (v == null) ? "" : nz(v.getTipoVehiculo());
+                    String tipoArea = (v == null) ? "" : nz(v.getTipoArea());
+
+                    md.addRow(new Object[]{ carne, nombre, placa, carrera, tipoVeh, tipoArea });
+                }
+
+                Tablitaa.setModel(md);
+    
 }
+
+
   
     /**
      * This method is called from within the constructor to initialize the form.
@@ -220,7 +270,7 @@ public class ListaVehiculos extends javax.swing.JPanel {
         Tablitaa.getCellEditor().stopCellEditing();
     }
 
-    // 🔸 2. Tomar el modelo actualizado
+    
     javax.swing.table.TableModel model = Tablitaa.getModel();
     int sel = Combox.getSelectedIndex(); // selecciona que archuivo quire 
 

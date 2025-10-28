@@ -4,7 +4,7 @@
  */
 package com.mycompany.proyecto_estacionamiento;
 
-import javax.swing.ImageIcon;
+
 
 /**
  *
@@ -61,6 +61,7 @@ public class Principal extends javax.swing.JFrame {
         menuVehiculos = new javax.swing.JMenu();
         menuIngresarvechiculo = new javax.swing.JMenuItem();
         menuRetirtarvehiculo = new javax.swing.JMenuItem();
+        MenuCrearUsuario = new javax.swing.JMenuItem();
         menuArchivos = new javax.swing.JMenu();
         menuListado = new javax.swing.JMenuItem();
         menuCargar = new javax.swing.JMenuItem();
@@ -108,6 +109,14 @@ public class Principal extends javax.swing.JFrame {
             }
         });
         menuVehiculos.add(menuRetirtarvehiculo);
+
+        MenuCrearUsuario.setText("Crear nuevo Usuario");
+        MenuCrearUsuario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuCrearUsuarioActionPerformed(evt);
+            }
+        });
+        menuVehiculos.add(MenuCrearUsuario);
 
         jMenuBar1.add(menuVehiculos);
 
@@ -193,6 +202,10 @@ public class Principal extends javax.swing.JFrame {
         panellistavehiculos.setVisible(true);
     }//GEN-LAST:event_menuListadoActionPerformed
 
+    private void MenuCrearUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuCrearUsuarioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_MenuCrearUsuarioActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -219,6 +232,7 @@ public class Principal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem MenuCrearUsuario;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
