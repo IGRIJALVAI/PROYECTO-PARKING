@@ -18,6 +18,7 @@ public class Principal extends javax.swing.JFrame {
     RetirarVehiculos panelretirarvehiculo;
     CargarVehiculos panelcargarvehiculos;
     ListaVehiculos panellistavehiculos;
+    CrearUsuario panelcrearCrearUsuario;
     
     public Principal() {
         initComponents();
@@ -40,10 +41,15 @@ public class Principal extends javax.swing.JFrame {
         panellistavehiculos.setBounds (300,0,473, 400);
         add (panellistavehiculos);
         
+        panelcrearCrearUsuario = new CrearUsuario();
+        panelcrearCrearUsuario.setBounds (300,0,473, 400);
+        add (panelcrearCrearUsuario);
+        
         panelretirarvehiculo.setVisible(false);
         panelingresarvehiculo.setVisible(false);  
         panelcargarvehiculos.setVisible(false);
         panellistavehiculos.setVisible(false);
+        panelcrearCrearUsuario.setVisible(false);
     }
 
     /**
@@ -204,6 +210,11 @@ public class Principal extends javax.swing.JFrame {
 
     private void MenuCrearUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuCrearUsuarioActionPerformed
         // TODO add your handling code here:
+        panelretirarvehiculo.setVisible(false);
+        panelingresarvehiculo.setVisible(false);
+        panelcargarvehiculos.setVisible(false);
+        panellistavehiculos.setVisible(false);
+        panelcrearCrearUsuario.setVisible(true);
     }//GEN-LAST:event_MenuCrearUsuarioActionPerformed
 
     /**
