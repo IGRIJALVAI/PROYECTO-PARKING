@@ -176,6 +176,7 @@ public class Principal extends javax.swing.JFrame {
         panellistavehiculos.setVisible(false);
         panelretirarvehiculo.setVisible(false);
         panelingresarvehiculo.setVisible(true);
+        panelcrearCrearUsuario.setVisible(false);
         
         
         
@@ -188,6 +189,7 @@ public class Principal extends javax.swing.JFrame {
         panelingresarvehiculo.setVisible(false);
         panelcargarvehiculos.setVisible(false);
         panellistavehiculos.setVisible(false);
+        panelcrearCrearUsuario.setVisible(false);
         
     }//GEN-LAST:event_menuRetirtarvehiculoActionPerformed
 
@@ -198,6 +200,7 @@ public class Principal extends javax.swing.JFrame {
         panelingresarvehiculo.setVisible(false);
         panelcargarvehiculos.setVisible(true);
         panellistavehiculos.setVisible(false);
+        panelcrearCrearUsuario.setVisible(false);
     }//GEN-LAST:event_menuCargarActionPerformed
 
     private void menuListadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuListadoActionPerformed
@@ -206,6 +209,7 @@ public class Principal extends javax.swing.JFrame {
         panelingresarvehiculo.setVisible(false);
         panelcargarvehiculos.setVisible(false);
         panellistavehiculos.setVisible(true);
+        panelcrearCrearUsuario.setVisible(false);
     }//GEN-LAST:event_menuListadoActionPerformed
 
     private void MenuCrearUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuCrearUsuarioActionPerformed

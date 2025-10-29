@@ -21,7 +21,49 @@ public class CrearUsuario extends javax.swing.JPanel {
     ComboxArea.setModel(new javax.swing.DefaultComboBoxModel<>(
         new String[]{"Seleccione el tipo","Estudiante", "Catedratico", "Moto"}
     ));
+   }
+    
+    private String nz(Object o) {
+    return (o == null) ? "" : o.toString().trim();
 }
+
+        public String normPlaca(Object p) {
+            if (p == null) return "";
+            return p.toString().replace("-", "").replace(" ", "").toUpperCase().trim();
+        }
+
+        public boolean existeCarne(String carne) {
+            for (Usuarios u : DatosCentrales.USUARIOS) {
+                if (nz(u.getCarne()).equalsIgnoreCase(carne)) return true;
+            }
+            return false;
+        }
+
+        public boolean existePlaca(String placaNorm) {
+            for (Usuarios u : DatosCentrales.USUARIOS) {
+                if (normPlaca(u.getPlaca()).equals(placaNorm)) return true;
+            }
+            return false;
+        }
+
+        public boolean existeVehiculo(String placaNorm) {
+            for (Vehiculos v : DatosCentrales.VEHICULOS) {
+                if (normPlaca(v.getPlaca()).equals(placaNorm)) return true;
+            }
+            return false;
+        }
+
+        public void limpiar() {
+            
+            TexCarne.setText("");
+            TexNombre.setText("");
+            TexPlaca.setText("");
+            ComboxTipo.setSelectedIndex(0);
+            ComboxArea.setSelectedIndex(0);
+            TexCarne.requestFocus();
+        }
+        
+
     
     
     /**
@@ -49,6 +91,11 @@ public class CrearUsuario extends javax.swing.JPanel {
         jLabel1.setText("CREAR USUARIO");
 
         BtnGuardar.setText("Guardar");
+        BtnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnGuardarActionPerformed(evt);
+            }
+        });
 
         ComboxTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione el tipo", "Item 2", "Item 3", "Item 4" }));
         ComboxTipo.addActionListener(new java.awt.event.ActionListener() {
@@ -138,6 +185,54 @@ public class CrearUsuario extends javax.swing.JPanel {
     private void ComboxTipoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ComboxTipoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_ComboxTipoActionPerformed
+
+    private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
+        // TODO add your handling code here:
+        
+        String carne  = nz(TexCarne.getText());
+        String nombre = nz(TexNombre.getText());
+        String placa  = normPlaca(TexPlaca.getText()); // sin espacios o giones
+        String tipoVehiculo = (String) ComboxTipo.getSelectedItem();
+        String tipoArea     = (String) ComboxArea.getSelectedItem();
+
+    if (carne.isEmpty() || nombre.isEmpty()) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Carné y nombre vacios");
+        return;
+    }
+    if (existeCarne(carne)) {
+        javax.swing.JOptionPane.showMessageDialog(this, "El carné ya existe");
+        return;
+    }
+   
+    if (!placa.isEmpty() && existePlaca(placa)) {
+        javax.swing.JOptionPane.showMessageDialog(this, "La placa en uso");
+        return;
+    }
+
+  
+    Usuarios u = new Usuarios();   // guardar usuaioo
+    u.setCarne(carne);
+    u.setNombre(nombre);
+    u.setPlaca(placa);      
+    u.setCarrera("");       
+
+    DatosCentrales.USUARIOS.add(u);
+
+ 
+    if (!placa.isEmpty()) {  // si ingresa placse crea
+      
+        if (!existeVehiculo(placa)) {
+            Vehiculos v = new Vehiculos();// si no existe el vehículo por placa, lo creamos
+            v.setPlaca(placa);
+            v.setTipoVehiculo(nz(tipoVehiculo));
+            v.setTipoArea(nz(tipoArea)); 
+            DatosCentrales.VEHICULOS.add(v);
+        }
+    }
+
+    javax.swing.JOptionPane.showMessageDialog(this, "Usuario guardado correctamente.");
+    limpiar();
+    }//GEN-LAST:event_BtnGuardarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
