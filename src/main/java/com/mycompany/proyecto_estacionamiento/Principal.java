@@ -2,11 +2,16 @@
 package com.mycompany.proyecto_estacionamiento;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 
 
 
 public class Principal extends javax.swing.JFrame {
+    
+    private javax.swing.JPanel areaTrasnparente;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Principal.class.getName());
 
@@ -17,41 +22,73 @@ public class Principal extends javax.swing.JFrame {
     CrearUsuario panelcrearCrearUsuario;
     
     public Principal() {
-        initComponents();
+       initComponents();
         setLocationRelativeTo(null);
-        setSize (800,450);
+        setSize(800, 450);
+
+    
+        areaTrasnparente = new javax.swing.JPanel(null) {
+            { 
+        // IMPORTANTE: que NO sea opaco
+        setOpaque(false);
+    }
+    @Override
+    protected void paintComponent(Graphics g) {
+        // NO llenes el fondo con super si fuera opaco;
+        // con opaque=false, super ya no pinta un fondo sólido.
+        // super.paintComponent(g);  // <- puedes omitirlo
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        // Opción A: color con alpha
+        g2.setColor(new java.awt.Color(255, 255, 255, 80)); // ajusta 0..255
+        g2.fillRect(0, 0, getWidth(), getHeight());
+
+        // (Opcional) Opción B: usar AlphaComposite (equivalente):
+        // g2.setComposite(java.awt.AlphaComposite.SrcOver.derive(0.6f)); // 60% opaco
+        // g2.setColor(java.awt.Color.WHITE);
+        // g2.fillRect(0, 0, getWidth(), getHeight());
+
+        g2.dispose();
+            }
+        };
         
-        getContentPane().setComponentZOrder(fondoxd, getContentPane().getComponentCount() - 1);
-        getContentPane().revalidate();
-        getContentPane().repaint();
+        areaTrasnparente.setBounds(300, 0, 473, 400);
+        
+        getContentPane().add(areaTrasnparente);
 
         
+        getContentPane().setComponentZOrder(areaTrasnparente, 0); //  0rden de capas
         
-        panelingresarvehiculo = new IngresarVehiculos();
-        panelingresarvehiculo.setBounds (300,0, 473,400);
-        add (panelingresarvehiculo);
+        getContentPane().setComponentZOrder(fondoxd, getContentPane().getComponentCount() - 1);
+
         
-        panelretirarvehiculo = new RetirarVehiculos();
-        panelretirarvehiculo.setBounds (300,0,473, 400);
-        add (panelretirarvehiculo);
-        
-        panelcargarvehiculos = new CargarVehiculos();
-        panelcargarvehiculos.setBounds (300,0,473, 400);
-        add (panelcargarvehiculos);
-        
-        panellistavehiculos = new ListaVehiculos();
-        panellistavehiculos.setBounds (300,0,473, 400);
-        add (panellistavehiculos);
-        
-        panelcrearCrearUsuario = new CrearUsuario();
-        panelcrearCrearUsuario.setBounds (300,0,473, 400);
-        add (panelcrearCrearUsuario);
-        
-        panelretirarvehiculo.setVisible(false);
-        panelingresarvehiculo.setVisible(false);  
-        panelcargarvehiculos.setVisible(false);
-        panellistavehiculos.setVisible(false);
-        panelcrearCrearUsuario.setVisible(false);
+        panelingresarvehiculo = new IngresarVehiculos(); //  póner paneles y agregarlos dentrro del tranapaarente
+        panelretirarvehiculo  = new RetirarVehiculos();
+        panelcargarvehiculos  = new CargarVehiculos();
+        panellistavehiculos   = new ListaVehiculos();
+        panelcrearCrearUsuario= new CrearUsuario();
+
+     
+        panelingresarvehiculo.setOpaque(false);    //  para que se vea el fondo a 
+        panelretirarvehiculo.setOpaque(false);
+        panelcargarvehiculos.setOpaque(false);
+        panellistavehiculos.setOpaque(false);
+        panelcrearCrearUsuario.setOpaque(false);
+
+        for (java.awt.Component c : new java.awt.Component[]{
+            
+                panelingresarvehiculo, panelretirarvehiculo,
+            
+                panelcargarvehiculos, panellistavehiculos, panelcrearCrearUsuario}) {
+            
+            c.setBounds(0, 0, 473, 400);
+            areaTrasnparente.add(c);    
+            
+            c.setVisible(false);
+        }
+
+        getContentPane().revalidate();
+        getContentPane().repaint();
     }
 
     /**
@@ -136,8 +173,8 @@ public class Principal extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(fondoxd, javax.swing.GroupLayout.PREFERRED_SIZE, 757, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(39, Short.MAX_VALUE))
+                .addComponent(fondoxd, javax.swing.GroupLayout.PREFERRED_SIZE, 790, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
