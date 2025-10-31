@@ -18,6 +18,22 @@ public class DatosCentrales {
     public static final List<Vehiculos> VEHICULOS = new ArrayList<>();
     public static final List<Areas> AREAS = new ArrayList<>();
     public static final List<Spots> SPOTS = new ArrayList<>();
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     public static void limpiarTodo() {
         USUARIOS.clear();
