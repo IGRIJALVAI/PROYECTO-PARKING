@@ -254,13 +254,13 @@ public class CargarVehiculos extends javax.swing.JPanel {
                         usuario.clear();            
                         Cargarusuarios(br);        
                         llenartabla();             
-                    } else if (headerLow.startsWith("id,nombrea,capacidad,tipovehiculo")) {
+                    } else if (headerLow.startsWith("area_id,nombre,capacidad,tipo_vehiculo")) {
                         
                        
                         cargarAreas(br);            
                         llenarTablaAreas();    
                         
-                    } else if (headerLow.startsWith("spot_id,área_id,tipo_vehiculo,status")) {
+                    } else if (headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status")) {
                         
                         cargarSpots(br);
                         llenarTablaSpots();
@@ -432,7 +432,7 @@ public class CargarVehiculos extends javax.swing.JPanel {
      private void llenarTablaSpots() {
          
             DefaultTableModel md = new DefaultTableModel(
-                new String[]{" ID Spot", "ID Area", "tipoDE vehiculo", "Status"}, 0
+                new String[]{" ID Spot", "ID Area", "tipo de vehiculo", "Status"}, 0
             );
             for (Spots s : spots) {
                 md.addRow(new Object[]{ s.IdSpots, s.IdArea, s.TipoVehiculo, s.Status });

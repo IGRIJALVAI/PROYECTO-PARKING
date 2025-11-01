@@ -11,14 +11,12 @@ public class IngresarVehiculos extends javax.swing.JPanel {
      */
     public IngresarVehiculos() {
         initComponents();
-         // Cargar los valores reales en los combos
         ComboPago.setModel(new javax.swing.DefaultComboBoxModel<>(
                 new String[]{"EFECTIVO", "TARJETA", "TRANSFERENCIA"}));
 
         ComboTipo.setModel(new javax.swing.DefaultComboBoxModel<>(
                 new String[]{"DIA", "HORA"}));
 
-        // Acción del botón
         BtnGuardar.addActionListener(e -> registrarIngreso());
         
     }
@@ -33,14 +31,14 @@ public class IngresarVehiculos extends javax.swing.JPanel {
             return;
         }
 
-        // Valores por defecto (los podemos mejorar luego si quieres)
+    
         String tipoVehiculo = "CARRO";
         String perfil = "ESTUDIANTE";
 
-        // Registrar con la clase lógica
+
         RegistoIngreso.registrar(placa, tipoVehiculo, perfil, tipoTarifa, metodoPago);
 
-        // Limpiar campos
+    
         TexPlaca.setText("");
         ComboPago.setSelectedIndex(0);
         ComboTipo.setSelectedIndex(0);
