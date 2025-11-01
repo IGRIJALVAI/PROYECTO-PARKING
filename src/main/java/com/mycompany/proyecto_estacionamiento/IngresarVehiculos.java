@@ -1,13 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
+
 package com.mycompany.proyecto_estacionamiento;
 
-/**
- *
- * @author grija
- */
+import javax.swing.JOptionPane;
+
+
 public class IngresarVehiculos extends javax.swing.JPanel {
 
     /**
@@ -15,7 +11,41 @@ public class IngresarVehiculos extends javax.swing.JPanel {
      */
     public IngresarVehiculos() {
         initComponents();
+         // Cargar los valores reales en los combos
+        ComboPago.setModel(new javax.swing.DefaultComboBoxModel<>(
+                new String[]{"EFECTIVO", "TARJETA", "TRANSFERENCIA"}));
+
+        ComboTipo.setModel(new javax.swing.DefaultComboBoxModel<>(
+                new String[]{"DIA", "HORA"}));
+
+        // Acción del botón
+        BtnGuardar.addActionListener(e -> registrarIngreso());
+        
     }
+    
+     private void registrarIngreso() {
+        String placa = TexPlaca.getText().trim();
+        String metodoPago = (String) ComboPago.getSelectedItem();
+        String tipoTarifa = (String) ComboTipo.getSelectedItem();
+
+        if (placa.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor ingrese una placa válida.");
+            return;
+        }
+
+        // Valores por defecto (los podemos mejorar luego si quieres)
+        String tipoVehiculo = "CARRO";
+        String perfil = "ESTUDIANTE";
+
+        // Registrar con la clase lógica
+        RegistoIngreso.registrar(placa, tipoVehiculo, perfil, tipoTarifa, metodoPago);
+
+        // Limpiar campos
+        TexPlaca.setText("");
+        ComboPago.setSelectedIndex(0);
+        ComboTipo.setSelectedIndex(0);
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -41,28 +71,24 @@ public class IngresarVehiculos extends javax.swing.JPanel {
 
         BtnGuardar.setText("Ingresar");
 
-        jLabel3.setText("Seleecione el tipo de pago");
+        jLabel3.setText("Tipo de pago");
 
         ComboPago.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         ComboTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jLabel4.setText("Tipo de vehiculo");
+        jLabel4.setText("Tipo de tarifa");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addGap(49, 49, 49))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(ComboPago, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addContainerGap(88, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(ComboPago, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(49, 49, 49)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
                     .addComponent(ComboTipo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
