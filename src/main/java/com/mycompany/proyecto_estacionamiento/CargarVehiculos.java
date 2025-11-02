@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -241,7 +242,12 @@ public class CargarVehiculos extends javax.swing.JPanel {
                 }
 
                 
-                String headerLow = header.toLowerCase().replace(" ", ""); // dejar en minuscula y sin espacos
+                
+                    String headerLow = Normalizer.normalize(header, Normalizer.Form.NFD) // Deja el encabezado sin tildes y minusculas y sin espacios
+                            .replaceAll("\\p{M}", "")   
+                            .toLowerCase()
+                            .replace(" ", "");
+
 
                   if (headerLow.startsWith("placa,tipo_vehiculo,tipo_area")) { //filtro de emcabezado
                         
@@ -255,13 +261,64 @@ public class CargarVehiculos extends javax.swing.JPanel {
                         Cargarusuarios(br);        
                         llenartabla();             
                     } else if (headerLow.startsWith("area_id,nombre,capacidad,tipo_vehiculo")) {
-                        
-                       
+   
+                        for (Areas a : areas) {  // arregla nombres de areqas tras cargarlas
+                            if (a.getNombreA() != null) {
+                                String n = a.getNombreA().trim().toUpperCase();
+
+                                if (n.startsWith("MOTO")) {
+                                    n = "MOTOS";
+                                }
+                                if (n.startsWith("ESTUDIANT")) {
+                                    n = "ESTUDIANTES";
+                                }
+                                if (n.startsWith("CATEDRATIC")) {
+                                    n = "CATEDRATICOS";
+                                }
+
+                                a.setNombreA(n);
+                            }
+
+                            if (a.getIdArea() != null) {
+                                a.setIdArea(a.getIdArea().trim().toUpperCase());
+                            }
+
+                            if (a.getTipoVehiculo() != null) {
+                                a.setTipoVehiculo(a.getTipoVehiculo().trim().toUpperCase());
+                            }
+                            
+                            
+                        }
                         cargarAreas(br);            
                         llenarTablaAreas();    
                         
                     } else if (headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status")) {
                         
+                        
+                                            
+                    for (Spots s : spots) {
+                        
+                       if (s.getIdArea() != null) {
+                            s.setIdArea(s.getIdArea().trim().toUpperCase());
+                        }
+                        if (s.getIdSpots() != null) {
+                            s.setIdSpots(s.getIdSpots().trim().toUpperCase());
+                        }
+                        if (s.getTipoVehiculo() != null) {
+                            s.setTipoVehiculo(s.getTipoVehiculo().trim().toUpperCase());
+                        }
+
+                        String st = (s.getStatus() == null ? "" : s.getStatus().trim().toUpperCase());
+                        if (st.equals("FREE") || st.equals("AVAILABLE")) {
+                            s.setStatus("LIBRE");
+                        } else if (st.equals("OCCUPIED") || st.equals("BUSY")) {
+                            s.setStatus("OCUPADO");
+                        } else if (st.isEmpty()) {
+                            s.setStatus("LIBRE"); 
+                        } else {
+                            s.setStatus(st); // ya viene libre o ocupado
+                        }
+                    }
                         cargarSpots(br);
                         llenarTablaSpots();
                         

@@ -14,6 +14,10 @@ import java.util.Map;
  * @author grija
  */
 public class DatosCentrales {
+    
+    public static final String STATUS_LIBRE = "LIBRE";
+    public static final String STATUS_OCUPADO = "OCUPADO";
+
 
     public static final List<Usuarios> USUARIOS = new ArrayList<>();
     public static final List<Vehiculos> VEHICULOS = new ArrayList<>();
@@ -25,99 +29,236 @@ public class DatosCentrales {
     public static final Map<String, String> PLACAySPOT = new HashMap<>();
 
 
-    private static final EnumMap<Ticket.MetodoPago, BigDecimal> TotalesPago= // usa un map emun que usa el enum como indice y big prar dato exacto
-            new EnumMap<>(Ticket.MetodoPago.class);
-
+    private static final EnumMap<Ticket.MetodoPago, BigDecimal> ComoPago = new EnumMap<>(Ticket.MetodoPago.class);
     static {
-        for (Ticket.MetodoPago mp : Ticket.MetodoPago.values()) {
-            TotalesPago.put(mp, BigDecimal.ZERO); // al arracan se pone en 0 todo
-        }
+        
+    ComoPago.put(Ticket.MetodoPago.EFECTIVO, BigDecimal.ZERO);
+    ComoPago.put(Ticket.MetodoPago.TARJETA, BigDecimal.ZERO);
+    ComoPago.put(Ticket.MetodoPago.TRANSFERENCIA, BigDecimal.ZERO);
+    
     }
 
     
     public static String safe(String s) { 
         return s == null ? "" : s.trim().toUpperCase(); } // evita el nul y deja vacio los esapcios
 
-    public static String spotKey(String idArea, String idSpot) { // crea una llacve para mis espacipos  y safe limpia y no null
-        return safe(idArea) + "#" + safe(idSpot); // ekl numeral solo es la fiormna de separar
+    public static String Spotllave(String idArea, String idSpot) {
+        
+    return (idArea == null ? "" : idArea.trim().toUpperCase()) + "#" +(idSpot == null ? "" : idSpot.trim().toUpperCase());
+    
+     }
+    
+    public static String normalizarPlaca(String s){
+        
+    return safe(s).replace("-", "").replace(" ", "");
+    }
+    
+    
+    public static String AreaNombre(String n) {
+        
+    String s = safe(n); //safe prepara el texto para que bno este erorr y lo lim,pia
+
+    if (s.startsWith("MOTO")) {
+        return "MOTOS";
+        
+    } else if (s.startsWith("ESTUDIANT")) {
+        return "ESTUDIANTES";
+        
+    } else if (s.startsWith("CATEDRATIC")) { 
+        return "CATEDRATICOS";
+    }
+
+    return s;
+}
+    
+    
+    
+   public static Spots buscarSpotIds(String idArea, String idSpot) {
+       
+    String a = safe(idArea), sp = safe(idSpot);
+    
+    for (Spots s : SPOTS) {
+     
+        if (a.equals(safe(s.getIdArea())) && sp.equals(safe(s.getIdSpots()))) {
+            return s;
+        }
+    }
+    return null;
     }
 
    
-    public static Spots buscarSpotIds(String idArea, String idSpot) { // busca el objeto spot por  los id
-        String a = safe(idArea), sp = safe(idSpot);
-        for (Spots s : SPOTS) {
-            if (a.equals(safe(s.getIdArea())) && sp.equals(safe(s.getIdSpots()))) {
-                return s;
-            }
+    public static Spots SpotvacioArea(String tipoArea) { //buscar Spot Libre Por Tipo de Area
+        
+    String t = safe(tipoArea);
+    
+    for (Spots s : SPOTS) {
+        if (t.equals(safe(s.getTipoVehiculo())) && STATUS_LIBRE.equalsIgnoreCase(s.getStatus())) {
+            return s;
         }
-        return null;
+    }
+    return null;
     }
 
+  
    
-    public static Spots buscarSpotLibrePorTipoArea(String tipoArea) {  // Busca el primer spot vacio con su  tipo se parzaca a su tipo area 
-        String t = safe(tipoArea);
-        for (Spots s : SPOTS) {
-            if (t.equals(safe(s.getTipoVehiculo())) && "LIBRE".equalsIgnoreCase(s.getStatus())) {
-                return s;
-            }
-        }
-        return null;
-    }
+    
+    public static Spots SpotLibre(String idArea, String tipoVehiculo) {
+    String ida = safe(idArea);
+    String tv  = safe(tipoVehiculo);
 
-  
-    public static synchronized void ocuparSpot(Spots s, String placaNorm, Ticket ticket) { // marcamos ligbre o ocupado
-        if (s == null || placaNorm == null || ticket == null) return;
-        s.setStatus("OCUPADO");
-        String key = spotKey(s.getIdArea(), s.getIdSpots());
-        SPOTyPLACA.put(key, placaNorm);
-        PLACAySPOT.put(placaNorm, key);
-        TICKETSaCTIVOS.put(placaNorm, ticket);
-    }
+    for (Spots s : SPOTS) {
+        boolean mismaArea = safe(s.getIdArea()).equals(ida);
+        boolean mismoTipo = safe(s.getTipoVehiculo()).equals(tv);
 
-  
-    public static synchronized void liberarPorPlaca(String placaNorm) { //  por la plca me librea el espod y lo deja libre y moeve el tiket
-        if (placaNorm == null) return;
-        String key = PLACAySPOT.remove(placaNorm);
-        if (key != null) {
-            SPOTyPLACA.remove(key);
-            String[] p = key.split("#", 2);
-            if (p.length == 2) {
-                Spots s = buscarSpotIds(p[0], p[1]);
-                if (s != null) s.setStatus("LIBRE");
+        String st = safe(s.getStatus());// normalizatodo y acepta  el libre o free
+        boolean libre = st.equals("LIBRE") || st.equals("FREE");
+
+        if (mismaArea && mismoTipo && libre) {
+            s.setStatus("OCUPADO");               
+            return s;
+                }
             }
-        }
-        TICKETSaCTIVOS.remove(placaNorm);
-    }
+            return null; // solo cuando no encuentre spots
+            }
+  
 
     
-    public static Ticket getTicketPorSpot(String idArea, String idSpot) { // devuielve el tiket de su spot
-        String key = spotKey(idArea, idSpot);
-        String placa = SPOTyPLACA.get(key);
-        return (placa == null) ? null : TICKETSaCTIVOS.get(placa);
+   public static Ticket TicketPorSpot(String idArea, String idSpot) {
+       
+    if (idArea == null || idSpot == null) {
+        return null;
     }
+        
 
+    String lllave = Spotllave(idArea, idSpot);
+    String placa = SPOTyPLACA.get(lllave);
+
+    if (placa == null) {
+         return null;
+    }
+       
+    
+    return TICKETSaCTIVOS.get(placa);
+    
+    }
  
-    public static synchronized void agregarPago(Ticket.MetodoPago metodo, BigDecimal monto) { // total de su pago
-        if (metodo == null || monto == null) return;
-        TotalesPago.put(metodo, TotalesPago.get(metodo).add(monto));
-    }
+    public static void agregarPago(Ticket.MetodoPago metodo, BigDecimal monto) {
+        
+    if (metodo == null || monto == null) {
+        return;
+     }
 
-    public static synchronized BigDecimal getTotal(Ticket.MetodoPago metodo) {
-        return TotalesPago.getOrDefault(metodo, BigDecimal.ZERO);
-    }
+    BigDecimal totalActual = ComoPago.getOrDefault(metodo, BigDecimal.ZERO);
+    
+    ComoPago.put(metodo, totalActual.add(monto));
+    
+     }
 
-    public static synchronized BigDecimal getTotalGeneral() {
+    public static BigDecimal Total(Ticket.MetodoPago metodo) {
+        
+    if (metodo == null){
+         return BigDecimal.ZERO;
+    } 
+       
+    
+          return ComoPago.getOrDefault(metodo, BigDecimal.ZERO);
+        
+          }
+  
+  
+     public static BigDecimal TotalGeneral() {
+         
         BigDecimal total = BigDecimal.ZERO;
-        for (BigDecimal v : TotalesPago.values()) total = total.add(v);
-        return total;
-    }
 
-    public static synchronized void reiniciarTotales() {
-        for (Ticket.MetodoPago mp : Ticket.MetodoPago.values()) {
-            TotalesPago.put(mp, BigDecimal.ZERO);
+        for (BigDecimal valor : ComoPago.values()) {
+            total = total.add(valor);
         }
+
+        return total;
+            }
+
+      public static void reiniciarTotales() {
+          
+        for (Ticket.MetodoPago metodo : Ticket.MetodoPago.values())
+        ComoPago.put(metodo, BigDecimal.ZERO);
+        
+            }
+
+    
+      public static Vehiculos buscarPorPlaca(String placa){
+    String p = normalizarPlaca(placa);
+    
+    for (Vehiculos v : VEHICULOS) {
+        if (normalizarPlaca(v.getPlaca()).equals(p)) return v;
+    }
+    return null;
+}
+
+    
+    public static String areaPorNombre(String nombreArea){ // nombre ysu  idArea
+    String n = AreaNombre(nombreArea);
+        for (Areas a : AREAS) {
+            if (safe(a.getNombreA()).equals(n)) return a.getIdArea();
+        }
+        return null;
     }
 
+   
+    
+     public static void ocuparSpot(Spots spot, String placa, Ticket ticket) {
+    if (spot == null || placa == null || ticket == null){
+        return;   
+      } 
+       
+
+    spot.setStatus("OCUPADO");
+
+    String llavexd = Spotllave(spot.getIdArea(), spot.getIdSpots());
+
+    
+    SPOTyPLACA.put(llavexd, placa); // guarda las relaciones
+    PLACAySPOT.put(placa, llavexd);
+    TICKETSaCTIVOS.put(placa, ticket);
+    }
+     
+     
+     
+    public static void liberarPorPlaca(String placa) {
+      String placaNorm = normalizarPlaca(placa);
+
+      
+      String llavesxd = PLACAySPOT.remove(placaNorm); // tener la clave del spot asignado a esta placa
+      if (llavesxd == null) return; // Si no esta nada que liberasar
+
+      
+      SPOTyPLACA.remove(llavesxd); // borra la relación 
+
+      
+      String[] datos = llavesxd.split("#"); // aqui separamos el area y el con el id del spot
+      if (datos.length != 2) { //separa en2 partes xd
+          return;
+      }
+
+      Spots spot = buscarSpotIds(datos[0], datos[1]);  // busca el spot en la lista y lo narca como libre
+      if (spot != null) {
+          spot.setStatus("LIBRE");
+      }
+
+      
+      TICKETSaCTIVOS.remove(placaNorm); // quita el ticket  
+  }
+    
+   public static boolean estaDentro(String placa) {
+    if (placa == null) return false;
+    return TICKETSaCTIVOS.containsKey(normalizarPlaca(placa));
+}
+
+public static Ticket getTicketActivo(String placa) {
+    if (placa == null) return null;
+    return TICKETSaCTIVOS.get(normalizarPlaca(placa));
+}
+    
+    
     public static void limpiarTodo() {
         USUARIOS.clear();
         VEHICULOS.clear();

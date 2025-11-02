@@ -22,28 +22,63 @@ public class IngresarVehiculos extends javax.swing.JPanel {
     }
     
      private void registrarIngreso() {
-        String placa = TexPlaca.getText().trim();
-        String metodoPago = (String) ComboPago.getSelectedItem();
-        String tipoTarifa = (String) ComboTipo.getSelectedItem();
-
-        if (placa.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor ingrese una placa válida.");
-            return;
-        }
-
-    
-        String tipoVehiculo = "CARRO";
-        String perfil = "ESTUDIANTE";
-
-
-        RegistoIngreso.registrar(placa, tipoVehiculo, perfil, tipoTarifa, metodoPago);
-
-    
-        TexPlaca.setText("");
-        ComboPago.setSelectedIndex(0);
-        ComboTipo.setSelectedIndex(0);
+        String placa = TexPlaca.getText().trim().toUpperCase();
+    if (placa.isEmpty()) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Ingrese una placa correcta.");
+        return;
     }
+
+    String tipoPago = ComboPago.getSelectedItem().toString();
+    String tipoTarifa = ComboTipo.getSelectedItem().toString();
+
+   
+    if (DatosCentrales.TICKETSaCTIVOS.containsKey(placa)) { 
+        javax.swing.JOptionPane.showMessageDialog(this, "Este vehículo ya está dentro del parqueo.");
+        return;
+    }
+
+   
+    Vehiculos v = DatosCentrales.buscarPorPlaca(placa);
+    if (v == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "La placa no existe en el padrón.");
+        return;
+    }
+
     
+    String idArea = DatosCentrales.areaPorNombre(v.getTipoArea());
+    if (idArea == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "No se encontró el área para: " + v.getTipoArea());
+        return;
+    }
+
+  
+    Spots spot = DatosCentrales.SpotLibre(idArea, v.getTipoVehiculo());
+    if (spot == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "No hay espacios libres en el área " + v.getTipoArea());
+        return;
+    }
+
+    Ticket t = new Ticket(
+    placa,
+    Ticket.TipoTarifa.valueOf(tipoTarifa),
+    Ticket.MetodoPago.valueOf(tipoPago),
+    v.getTipoVehiculo(),
+    idArea,
+    spot.getIdSpots()
+);
+
+    
+    DatosCentrales.ocuparSpot(spot, placa, t); // Ocupar el spot y registrar ticket
+
+    javax.swing.JOptionPane.showMessageDialog(this, 
+        "Vehículo ingresado con éxito\nÁrea: " + v.getTipoArea() + 
+        "\nSpot: " + spot.getIdSpots());
+
+ 
+    TexPlaca.setText("");
+    ComboPago.setSelectedIndex(0);
+    ComboTipo.setSelectedIndex(0);
+}
 
     /**
      * This method is called from within the constructor to initialize the form.

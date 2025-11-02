@@ -44,7 +44,7 @@ public class RegistoIngreso {
             tipoArea = "CATEDRATICO".equalsIgnoreCase(perfil) ? "CATEDRATICO" : "ESTUDIANTE";
         }
 
-        Spots spot = DatosCentrales.buscarSpotLibrePorTipoArea(tipoArea);
+        Spots spot = DatosCentrales.SpotvacioArea(tipoArea);
         if (spot == null) {
             JOptionPane.showMessageDialog(null, "No hay espacios libres en el area" + tipoArea);
             return;
