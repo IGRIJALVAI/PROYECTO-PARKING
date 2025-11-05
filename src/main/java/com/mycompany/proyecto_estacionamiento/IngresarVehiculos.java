@@ -40,39 +40,37 @@ public class IngresarVehiculos extends javax.swing.JPanel {
    
     Vehiculos v = DatosCentrales.buscarPorPlaca(placa);
     if (v == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "La placa no existe en el padrón.");
+        javax.swing.JOptionPane.showMessageDialog(this, "La placa no existe en los datos");
         return;
     }
 
     
     String idArea = DatosCentrales.areaPorNombre(v.getTipoArea());
     if (idArea == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "No se encontró el área para: " + v.getTipoArea());
+        javax.swing.JOptionPane.showMessageDialog(this, "No se encontro el area para: " + v.getTipoArea());
         return;
     }
 
   
     Spots spot = DatosCentrales.SpotLibre(idArea, v.getTipoVehiculo());
     if (spot == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "No hay espacios libres en el área " + v.getTipoArea());
+        javax.swing.JOptionPane.showMessageDialog(this, "No hay espacios libres en el area " + v.getTipoArea());
         return;
     }
 
-    Ticket t = new Ticket(
-    placa,
-    Ticket.TipoTarifa.valueOf(tipoTarifa),
-    Ticket.MetodoPago.valueOf(tipoPago),
-    v.getTipoVehiculo(),
-    idArea,
-    spot.getIdSpots()
-);
+             
+            //se crea ekl tikcet
+         Ticket t = new Ticket(placa,Ticket.TipoTarifa.valueOf(tipoTarifa),  Ticket.MetodoPago.valueOf(tipoPago), v.getTipoVehiculo(), idArea,spot.getIdSpots());
 
-    
-    DatosCentrales.ocuparSpot(spot, placa, t); // Ocupar el spot y registrar ticket
+        
+        DatosCentrales.ocuparSpot(spot, placa, t); // ocupamos un spot y tambien registamos el tiket 
+        DatosCentrales.HISTORIALdeTICKETS.add(t);
 
-    javax.swing.JOptionPane.showMessageDialog(this, 
-        "Vehículo ingresado con éxito\nÁrea: " + v.getTipoArea() + 
-        "\nSpot: " + spot.getIdSpots());
+        javax.swing.JOptionPane.showMessageDialog(this, t.imprimir());
+
+        DatosCentrales.ocuparSpot(spot, placa, t); // Ocupar el spot y registrar ticket
+
+      javax.swing.JOptionPane.showMessageDialog(this,  "Vehículo ingresado al area" + v.getTipoArea() + "\ny Spot " + spot.getIdSpots());
 
  
     TexPlaca.setText("");

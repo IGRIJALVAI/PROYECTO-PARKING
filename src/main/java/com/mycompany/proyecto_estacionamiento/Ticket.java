@@ -81,7 +81,20 @@ public class Ticket {
         return horaIngreso; 
     }
     
-    
+    public String imprimir() {
+        
+    return  "      TICKET DE INGRESO \n" +
+            "      PARQUEO UMG    \n" +
+            "Placa: " + placa + "\n" +
+            "Tipo Vehículo: " + tipoVehiculo + "\n" +
+            "Área: " + idArea + "\n" +
+            "Spot: " + idSpot + "\n" +
+            "Tarifa: " + tarifa + "\n" +
+            "Pago: " + pago + "\n" +
+            "Hora de ingreso: " + horaIngreso + "\n" +
+            " ADIOS ";
+}
+
     
     
 }
