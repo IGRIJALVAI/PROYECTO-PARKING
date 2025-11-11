@@ -3,6 +3,7 @@ package com.mycompany.proyecto_estacionamiento;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  *
@@ -21,7 +22,7 @@ public class Conexion_BD {
             System.out.println("ConexiOn exitosa");
             return cn;
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
             System.out.println("Error en conexion" + e.getMessage());
             return null;
         }
