@@ -17,6 +17,7 @@ public class DatosCentrales {
     
     public static final String STATUS_LIBRE = "LIBRE";
     public static final String STATUS_OCUPADO = "OCUPADO";
+    public static final String STATUS_RESERVADO = "RESERVADO";
 
 
     public static final List<Usuarios> USUARIOS = new ArrayList<>();
@@ -27,6 +28,8 @@ public class DatosCentrales {
     public static final List<Ticket> HISTORIALdeTICKETS     = new ArrayList<>();
     public static final Map<String, String> SPOTyPLACA = new HashMap<>();
     public static final Map<String, String> PLACAySPOT = new HashMap<>();
+    public static final java.util.Map<String, java.time.LocalDateTime> RESERVAunRATO = new java.util.HashMap<>(); // key = "AREA#SPOT"
+    public static final java.util.Map<String, String> RESERVAdePLACA = new java.util.HashMap<>(); 
 
 
     private static final EnumMap<Ticket.MetodoPago, BigDecimal> ComoPago = new EnumMap<>(Ticket.MetodoPago.class);
@@ -258,6 +261,45 @@ public static Ticket getTicketActivo(String placa) {
     return TICKETSaCTIVOS.get(normalizarPlaca(placa));
 }
     
+// ¿Reserva vigente por placa? Devuelve el spot si sigue vigente
+public static Spots spotReservadoDePlaca(String placaNorm) {
+    String key = RESERVAdePLACA.get(placaNorm);
+    if (key == null) return null;
+
+    java.time.LocalDateTime lim = RESERVAunRATO.get(key);
+    if (lim == null || java.time.LocalDateTime.now().isAfter(lim)) {
+        // venció: limpiar
+        RESERVAunRATO.remove(key);
+        RESERVAdePLACA.remove(placaNorm);
+        return null;
+    }
+
+    String[] p = key.split("#", 2);
+    if (p.length != 2) return null;
+    return buscarSpotIds(p[0], p[1]);
+}
+
+// Crear una reserva sencilla (marca RESERVADO y guarda “hasta”)
+public static void crearReservaPorMinutos(String placaNorm, Spots s, int minutos) {
+    if (placaNorm == null || s == null) return;
+    s.setStatus(STATUS_RESERVADO);
+    String key = Spotllave(s.getIdArea(), s.getIdSpots());
+    RESERVAdePLACA.put(placaNorm, key);
+    RESERVAunRATO.put(key, java.time.LocalDateTime.now().plusMinutes(minutos));
+}
+
+// Cancelar la reserva (cuando reingresa y vuelve a ocupar)
+public static void cancelarReservaPorPlaca(String placaNorm) {
+    String key = RESERVAdePLACA.remove(placaNorm);
+    if (key != null) {
+        RESERVAunRATO.remove(key);
+    }
+}
+
+
+
+
+
     
     public static void limpiarTodo() {
         USUARIOS.clear();
