@@ -164,6 +164,8 @@ public class CargarVehiculos extends javax.swing.JPanel {
     private void BtnSubirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSubirActionPerformed
         // TODO add your handling code here:
         
+          Subir_BD.subirTodoDesdeDatosCentrales();
+        
                                                       
     }//GEN-LAST:event_BtnSubirActionPerformed
 
