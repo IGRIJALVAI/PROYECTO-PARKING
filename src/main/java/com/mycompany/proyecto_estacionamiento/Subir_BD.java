@@ -28,6 +28,16 @@ public class Subir_BD {
             if (!DatosCentrales.VEHICULOS.isEmpty()) {
                 Importar_BD.insertarVehiculosBatch(DatosCentrales.VEHICULOS);
             }
+              if (!DatosCentrales.HISTORICO.isEmpty()) {
+           
+            java.util.List<Historico> listos = new java.util.ArrayList<>();
+            for (Historico h : DatosCentrales.HISTORICO) {
+                if (h.FechaSalida != null) listos.add(h);
+            }
+            if (!listos.isEmpty()) {
+                Importar_BD.subirHistorico(listos);
+            }
+        }
             JOptionPane.showMessageDialog(null, "Datos subidos a la base de datos ");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al subir" + e.getMessage());

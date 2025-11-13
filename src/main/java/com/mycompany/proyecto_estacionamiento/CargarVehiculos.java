@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
+
 package com.mycompany.proyecto_estacionamiento;
 
 import java.util.List;
@@ -36,6 +33,7 @@ public class CargarVehiculos extends javax.swing.JPanel {
        List<Vehiculos> vehiculos = new ArrayList<>();
        List<Areas> areas = new ArrayList<>();
        List<Spots> spots = new ArrayList<>();
+       List<Historico> historicos = new ArrayList<>();
 
 
     public CargarVehiculos() {
@@ -185,6 +183,10 @@ public class CargarVehiculos extends javax.swing.JPanel {
 
             DatosCentrales.SPOTS.clear();            
             DatosCentrales.SPOTS.addAll(spots);
+            
+            DatosCentrales.HISTORICO.clear();
+            DatosCentrales.HISTORICO.addAll(historicos);
+            
              JOptionPane.showMessageDialog(null,"Datos guardados en memoria");
     
     }//GEN-LAST:event_BtnGuardarDatossActionPerformed
@@ -194,11 +196,11 @@ public class CargarVehiculos extends javax.swing.JPanel {
     try (PrintWriter pw = new PrintWriter(
             new OutputStreamWriter(new FileOutputStream(archivo), java.nio.charset.StandardCharsets.UTF_8))) {
 
-        // titulos del archiuvo
-        pw.println("Cané,Nombre,Placa,Carrera");
+      
+        pw.println("Cané,Nombre,Placa,Carrera");   // titulos del archiuvo
 
-        // guradrr los datos
-        for (Usuarios u : usuario) {
+     
+        for (Usuarios u : usuario) {    // guradrr los datos
             
             pw.printf("%s,%s,%s,%s%n",
                     
@@ -297,7 +299,6 @@ public class CargarVehiculos extends javax.swing.JPanel {
                     } else if (headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status")) {
                         
                         
-                                            
                     for (Spots s : spots) {
                         
                        if (s.getIdArea() != null) {
@@ -324,7 +325,15 @@ public class CargarVehiculos extends javax.swing.JPanel {
                         cargarSpots(br);
                         llenarTablaSpots();
                         
-                    }else {
+                    }else if (headerLow.startsWith("ticket_id,placa,area_id,spot_id,fecha_ingreso,fecha_salida,modo,monto")) {
+                        
+                    
+                        historicos.clear();
+                        cargarHistorico(br);      
+                        llenarTablaHistorico();   
+                        
+              
+          }else {
                         throw new IOException("Encabezado no reconocido: " + header);
                     }
 
@@ -421,6 +430,33 @@ public class CargarVehiculos extends javax.swing.JPanel {
         }
     }
 }
+    // ====== HISTÓRICO ======
+  private void cargarHistorico(BufferedReader br) throws IOException {
+    historicos.clear();
+
+    String linea;
+    while ((linea = br.readLine()) != null) {
+        String[] a = linea.split(",", -1); // ticket_id, placa, area_id, spot_id, fecha_ingreso, fecha_salida, modo, monto
+        if (a.length >= 8) {
+            Historico h = new Historico();
+            h.IdTicket     = a[0].trim();
+            h.Placa        = a[1].trim();
+            h.IdArea       = a[2].trim();
+            h.IdSpots      = a[3].trim();
+
+           
+            h.FechaIngreso = a[4].isBlank() ? null : java.time.LocalDateTime.parse(a[4].trim()); // Fechas si vienen vaciias las dejamos en null
+
+           
+            h.TipoTarifa   = a[6].trim();  // ya sea tipo dia  o por hora
+
+            
+            h.Monto        = a[7].isBlank() ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(a[7].trim());// Monto
+
+            historicos.add(h);
+        }
+    }
+}
 
     
      
@@ -497,6 +533,25 @@ public class CargarVehiculos extends javax.swing.JPanel {
                 md.addRow(new Object[]{ s.IdSpots, s.IdArea, s.TipoVehiculo, s.Status });
             }
             Tablita.setModel(md);
+}
+     private void llenarTablaHistorico() {
+    javax.swing.table.DefaultTableModel md = new javax.swing.table.DefaultTableModel(
+        new String[]{"Ticket", "Placa", "Área", "Spot", "Ingreso", "Salida", "Tarifa", "Monto"}, 0
+    );
+
+    for (Historico h : historicos) {
+        md.addRow(new Object[]{
+            h.IdTicket,
+            h.Placa,
+            h.IdArea,
+            h.IdSpots,
+            (h.FechaIngreso == null ? "" : h.FechaIngreso.toString()),
+            (h.FechaSalida  == null ? "" : h.FechaSalida.toString()),
+            h.TipoTarifa,
+            (h.Monto == null ? "0" : h.Monto.toPlainString())
+        });
+    }
+    Tablita.setModel(md);
 }
 
 

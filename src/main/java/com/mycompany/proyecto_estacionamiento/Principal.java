@@ -1,17 +1,17 @@
 
 package com.mycompany.proyecto_estacionamiento;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.time.LocalDateTime;
 
 
 
 
 public class Principal extends javax.swing.JFrame {
     
-    private javax.swing.JPanel areaTrasnparente;
+    private final javax.swing.JPanel areaTrasnparente;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Principal.class.getName());
 
@@ -25,29 +25,32 @@ public class Principal extends javax.swing.JFrame {
        initComponents();
         setLocationRelativeTo(null);
         setSize(800, 450);
+        
+         
+        Descargar_BD.cargarUsuarios(); // descarga de la bse para tener los datos listos
+        Descargar_BD.cargarAreas();
+        Descargar_BD.cargarSpots();
+        Descargar_BD.cargarVehiculos();
+        liberarReservasVencidas();
+        Descargar_BD.cargarHistorico();
+      
+        
 
     
         areaTrasnparente = new javax.swing.JPanel(null) {
             { 
-        // IMPORTANTE: que NO sea opaco
+        
         setOpaque(false);
     }
     @Override
     protected void paintComponent(Graphics g) {
-        // NO llenes el fondo con super si fuera opaco;
-        // con opaque=false, super ya no pinta un fondo sólido.
-        // super.paintComponent(g);  // <- puedes omitirlo
+        
 
         Graphics2D g2 = (Graphics2D) g.create();
-        // Opción A: color con alpha
-        g2.setColor(new java.awt.Color(255, 255, 255, 80)); // ajusta 0..255
+        g2.setColor(new java.awt.Color(255, 255, 255, 80)); 
         g2.fillRect(0, 0, getWidth(), getHeight());
 
-        // (Opcional) Opción B: usar AlphaComposite (equivalente):
-        // g2.setComposite(java.awt.AlphaComposite.SrcOver.derive(0.6f)); // 60% opaco
-        // g2.setColor(java.awt.Color.WHITE);
-        // g2.fillRect(0, 0, getWidth(), getHeight());
-
+     
         g2.dispose();
             }
         };
@@ -90,6 +93,52 @@ public class Principal extends javax.swing.JFrame {
         getContentPane().revalidate();
         getContentPane().repaint();
     }
+    
+    
+    
+    public static void liberarReservasVencidas() {
+        
+    LocalDateTime ahora = LocalDateTime.now();
+
+   
+    for (Spots s : DatosCentrales.SPOTS) {  // buscamos en todos los spots
+
+       
+        String Llavecita = DatosCentrales.Spotllave(s.getIdArea(), s.getIdSpots());   // mir si esta resercado o tiene un rato 
+        
+        LocalDateTime vence = DatosCentrales.RESERVAunRATO.get(Llavecita);
+
+        if (DatosCentrales.STATUS_RESERVADO.equalsIgnoreCase(s.getStatus())) { // si ya se vencio
+
+            
+            if (vence != null && ahora.isAfter(vence)) {
+                s.setStatus(DatosCentrales.STATUS_LIBRE);
+                DatosCentrales.actualizarEstadoSpotEnBD(s.getIdArea(), s.getIdSpots(), DatosCentrales.STATUS_LIBRE);
+                DatosCentrales.RESERVAunRATO.remove(Llavecita);
+                DatosCentrales.RESERVAdePLACA.values().remove(Llavecita);
+            }
+
+           
+            if (vence == null) {
+                s.setStatus(DatosCentrales.STATUS_LIBRE);   // al reiniciarse se actualiza y que se quitn
+                DatosCentrales.actualizarEstadoSpotEnBD(s.getIdArea(), s.getIdSpots(), DatosCentrales.STATUS_LIBRE);
+            }
+        }
+    }
+}
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -109,6 +158,8 @@ public class Principal extends javax.swing.JFrame {
         menuArchivos = new javax.swing.JMenu();
         menuListado = new javax.swing.JMenuItem();
         menuCargar = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        MenuMapa = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -147,7 +198,7 @@ public class Principal extends javax.swing.JFrame {
 
         menuArchivos.setText("Archivos");
 
-        menuListado.setText("Lista de vehiculos");
+        menuListado.setText("Vista de datos");
         menuListado.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 menuListadoActionPerformed(evt);
@@ -164,6 +215,18 @@ public class Principal extends javax.swing.JFrame {
         menuArchivos.add(menuCargar);
 
         jMenuBar1.add(menuArchivos);
+
+        jMenu3.setText("Mapa de Spots");
+
+        MenuMapa.setText("Ver mapa");
+        MenuMapa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MenuMapaActionPerformed(evt);
+            }
+        });
+        jMenu3.add(MenuMapa);
+
+        jMenuBar1.add(jMenu3);
 
         setJMenuBar(jMenuBar1);
 
@@ -240,6 +303,31 @@ public class Principal extends javax.swing.JFrame {
         panelcrearCrearUsuario.setVisible(true);
     }//GEN-LAST:event_MenuCrearUsuarioActionPerformed
 
+    private void MenuMapaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MenuMapaActionPerformed
+        // TODO add your handling code here:
+        
+     Descargar_BD.cargarSpots();
+
+    // (debug) ver cuántos spots vienen
+    System.out.println("SPOTS cargados: " + DatosCentrales.SPOTS.size());
+
+    // 2) Crear y pintar panel
+    panelMapa mapa = new panelMapa();
+    mapa.mostrarMapa();
+
+    // 3) Mostrar
+    javax.swing.JDialog dlg = new javax.swing.JDialog(this, "Mapa de parqueo", true);
+    dlg.setContentPane(new javax.swing.JScrollPane(mapa));
+    dlg.setSize(900, 600);
+    dlg.setLocationRelativeTo(this);
+    dlg.setVisible(true);
+        
+        
+        
+        
+        
+    }//GEN-LAST:event_MenuMapaActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -268,7 +356,9 @@ public class Principal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem MenuCrearUsuario;
+    private javax.swing.JMenuItem MenuMapa;
     private javax.swing.JLabel fondoxd;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenu menuArchivos;
     private javax.swing.JMenuItem menuCargar;

@@ -2,6 +2,7 @@
 package com.mycompany.proyecto_estacionamiento;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -24,11 +25,12 @@ public class DatosCentrales {
     public static final List<Vehiculos> VEHICULOS = new ArrayList<>();
     public static final List<Areas> AREAS = new ArrayList<>();
     public static final List<Spots> SPOTS = new ArrayList<>();
-    public static final Map<String, Ticket> TICKETSaCTIVOS = new HashMap<>(); // 	Una tabla que relaciona la clave con un dato y el hasmap para encontrar datods
+    public static final List<Historico> HISTORICO = new ArrayList<>();
+    public static final Map<String, Ticket> TICKETSaCTIVOS = new HashMap<>(); //Una tabla que relaciona la clave con un dato y el hasmap para encontrar datods
     public static final List<Ticket> HISTORIALdeTICKETS     = new ArrayList<>();
     public static final Map<String, String> SPOTyPLACA = new HashMap<>();
     public static final Map<String, String> PLACAySPOT = new HashMap<>();
-    public static final java.util.Map<String, java.time.LocalDateTime> RESERVAunRATO = new java.util.HashMap<>(); // key = "AREA#SPOT"
+    public static final java.util.Map<String, java.time.LocalDateTime> RESERVAunRATO = new java.util.HashMap<>(); 
     public static final java.util.Map<String, String> RESERVAdePLACA = new java.util.HashMap<>(); 
 
 
@@ -44,45 +46,40 @@ public class DatosCentrales {
     
     public static String safe(String s) { 
         return s == null ? "" : s.trim().toUpperCase(); } // evita el nul y deja vacio los esapcios
+    
 
     public static String Spotllave(String idArea, String idSpot) {
-        
     return (idArea == null ? "" : idArea.trim().toUpperCase()) + "#" +(idSpot == null ? "" : idSpot.trim().toUpperCase());
     
      }
     
-    public static String normalizarPlaca(String s){
-        
+    public static String normalizarPlaca(String s){  //quita si tiene guiones 
     return safe(s).replace("-", "").replace(" ", "");
     }
     
     
     public static String AreaNombre(String n) {
-        
     String s = safe(n); //safe prepara el texto para que bno este erorr y lo lim,pia
 
-    if (s.startsWith("MOTO")) {
-        return "MOTOS";
-        
-    } else if (s.startsWith("ESTUDIANT")) {
-        return "ESTUDIANTES";
-        
-    } else if (s.startsWith("CATEDRATIC")) { 
-        return "CATEDRATICOS";
+        if (s.startsWith("MOTO")) { // el startsWith sirve para ver como empiza ek string 
+            return "MOTOS";
+
+        } else if (s.startsWith("ESTUDIANT")) {
+            return "ESTUDIANTES";
+
+        } else if (s.startsWith("CATEDRATIC")) { 
+            return "CATEDRATICOS";
+        }
+        return s;
     }
 
-    return s;
-}
-    
     
     
    public static Spots buscarSpotIds(String idArea, String idSpot) {
-       
-    String a = safe(idArea), sp = safe(idSpot);
-    
+ 
+    String busc = safe(idArea), busc2 = safe(idSpot);
     for (Spots s : SPOTS) {
-     
-        if (a.equals(safe(s.getIdArea())) && sp.equals(safe(s.getIdSpots()))) {
+        if (busc.equals(safe(s.getIdArea())) && busc2.equals(safe(s.getIdSpots()))) {
             return s;
         }
     }
@@ -128,23 +125,22 @@ public class DatosCentrales {
     
    public static Ticket TicketPorSpot(String idArea, String idSpot) {
        
-    if (idArea == null || idSpot == null) {
-        return null;
-    }
-        
+        if (idArea == null || idSpot == null) {
+            return null;
+        }
 
-    String lllave = Spotllave(idArea, idSpot);
-    String placa = SPOTyPLACA.get(lllave);
+        String lllave = Spotllave(idArea, idSpot);
+        String placa = SPOTyPLACA.get(lllave);
 
-    if (placa == null) {
-         return null;
-    }
-       
-    
-    return TICKETSaCTIVOS.get(placa);
-    
+            if (placa == null) {
+                 return null;
+            }
+            return TICKETSaCTIVOS.get(placa);
     }
  
+   
+   
+   
     public static void agregarPago(Ticket.MetodoPago metodo, BigDecimal monto) {
         
     if (metodo == null || monto == null) {
@@ -189,11 +185,12 @@ public class DatosCentrales {
 
     
       public static Vehiculos buscarPorPlaca(String placa){
-    String p = normalizarPlaca(placa);
+      String p = normalizarPlaca(placa);
     
-    for (Vehiculos v : VEHICULOS) {
-        if (normalizarPlaca(v.getPlaca()).equals(p)) return v;
-    }
+        for (Vehiculos v : VEHICULOS) {
+            if (normalizarPlaca(v.getPlaca()).equals(p))
+                return v;
+        }
     return null;
 }
 
@@ -201,9 +198,10 @@ public class DatosCentrales {
     public static String areaPorNombre(String nombreArea){ // nombre ysu  idArea
     String n = AreaNombre(nombreArea);
         for (Areas a : AREAS) {
-            if (safe(a.getNombreA()).equals(n)) return a.getIdArea();
+            if (safe(a.getNombreA()).equals(n)) 
+                return a.getIdArea();
         }
-        return null;
+        return null; 
     }
 
    
@@ -251,54 +249,189 @@ public class DatosCentrales {
       TICKETSaCTIVOS.remove(placaNorm); // quita el ticket  
   }
     
-   public static boolean estaDentro(String placa) {
-    if (placa == null) return false;
-    return TICKETSaCTIVOS.containsKey(normalizarPlaca(placa));
-}
+        public static boolean estaDentro(String placa) {
+          if (placa == null || placa.isEmpty()) {
+              return false;
+          }
 
-public static Ticket getTicketActivo(String placa) {
-    if (placa == null) return null;
-    return TICKETSaCTIVOS.get(normalizarPlaca(placa));
-}
+          String placaNorm;
+          try {
+              placaNorm = normalizarPlaca(placa);
+          } catch (Exception e) {
+              return false;
+          }
+
+          if (placaNorm == null || placaNorm.isEmpty()) {
+              return false;
+          }
+
+          try {
+              return TICKETSaCTIVOS.containsKey(placaNorm);
+          } catch (Exception e) {
+              return false;
+          }
+      }
+
+
+    public static Ticket getTicketActivo(String placa) {
+        
+        if (placa == null || placa.isEmpty()) {
+            return null;
+        }
+
+        String placaNorm;
+        try {
+            placaNorm = normalizarPlaca(placa);
+        } catch (Exception e) {
+            return null;
+        }
+
+        if (placaNorm == null || placaNorm.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return TICKETSaCTIVOS.get(placaNorm);
+        } catch (Exception e) {
+            return null;
+        }
+  }
+
     
-// ¿Reserva vigente por placa? Devuelve el spot si sigue vigente
-public static Spots spotReservadoDePlaca(String placaNorm) {
-    String key = RESERVAdePLACA.get(placaNorm);
-    if (key == null) return null;
 
-    java.time.LocalDateTime lim = RESERVAunRATO.get(key);
-    if (lim == null || java.time.LocalDateTime.now().isAfter(lim)) {
-        // venció: limpiar
-        RESERVAunRATO.remove(key);
-        RESERVAdePLACA.remove(placaNorm);
+        public static Spots spotReservadoDePlaca(String placaNorm) { // regresa el spot si sigue vigent
+            
+            if (placaNorm == null || placaNorm.isEmpty()) {
+                return null;
+            }
+
+            try {
+                String recervita = RESERVAdePLACA.get(placaNorm);
+                if (recervita == null || recervita.isEmpty()) {
+                    return null;
+                }
+
+                java.time.LocalDateTime limite = RESERVAunRATO.get(recervita);
+                java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
+
+
+                    if (limite == null || ahora.isAfter(limite)) {  // Si no hay limiote o ya se vencio limpiar y salir
+                        RESERVAunRATO.remove(recervita);
+                        RESERVAdePLACA.remove(placaNorm);
+                        return null;
+                    }
+
+
+                String[] p = recervita.split("#", 2); 
+                if (p.length != 2) {
+                    return null;
+                }
+                if (p[0] == null || p[0].isEmpty() || p[1] == null || p[1].isEmpty()) {
+                    return null;
+                }
+
+                return buscarSpotIds(p[0], p[1]);
+
+    } catch (Exception e) {
+      
         return null;
     }
-
-    String[] p = key.split("#", 2);
-    if (p.length != 2) return null;
-    return buscarSpotIds(p[0], p[1]);
 }
 
-// Crear una reserva sencilla (marca RESERVADO y guarda “hasta”)
-public static void crearReservaPorMinutos(String placaNorm, Spots s, int minutos) {
-    if (placaNorm == null || s == null) return;
-    s.setStatus(STATUS_RESERVADO);
-    String key = Spotllave(s.getIdArea(), s.getIdSpots());
-    RESERVAdePLACA.put(placaNorm, key);
-    RESERVAunRATO.put(key, java.time.LocalDateTime.now().plusMinutes(minutos));
+
+ 
+    public static void crearReservaPorMinutos(String placaNorm, Spots s, int minutos) {
+  
+                if (placaNorm == null || placaNorm.isEmpty()) {
+                    return;
+                }
+                    if (s == null) {
+                        return;
+                    }
+                        if (minutos <= 0) {
+                            return;
+                        }
+
+        try {
+
+            s.setStatus(STATUS_RESERVADO); // cmania el estado del spot
+
+
+            String laves = Spotllave(s.getIdArea(), s.getIdSpots()); // Generar llave del spot
+            if (laves == null || laves.isEmpty()) {
+                return;
+            }
+
+
+            RESERVAdePLACA.put(placaNorm, laves);  // lo guarda  en mapas
+            RESERVAunRATO.put(laves, java.time.LocalDateTime.now().plusMinutes(minutos));
+
+        } catch (Exception e) {
+
+        }
 }
 
-// Cancelar la reserva (cuando reingresa y vuelve a ocupar)
-public static void cancelarReservaPorPlaca(String placaNorm) {
-    String key = RESERVAdePLACA.remove(placaNorm);
-    if (key != null) {
-        RESERVAunRATO.remove(key);
+
+
+    public static void cancelarReservaPorPlaca(String placaNorm) {
+   
+    if (placaNorm == null || placaNorm.isEmpty()) {
+        return;
+    }
+
+    try {
+        String cancelar = RESERVAdePLACA.remove(placaNorm);
+
+        if (cancelar != null && !cancelar.isEmpty()) {
+            RESERVAunRATO.remove(cancelar);
+        }
+
+    } catch (Exception e) {
+       
     }
 }
 
 
 
+public static void registrarHistorico(Ticket t, BigDecimal monto) {
+    
+    if (t == null || monto == null) {
+        return;
+    }
 
+    try {
+        Historico h = Historico.desdeTicket(t, monto);
+
+        if (h != null) {
+            HISTORICO.add(h);
+        }
+
+    } catch (Exception e) {
+          System.out.println("Error" + e.getMessage());
+    }
+}
+
+
+public static void actualizarEstadoSpotEnBD(String area, String spot, String estado) {
+    try {
+        var cn = Conexion_BD.conectar();
+        var ps = cn.prepareStatement(
+            "UPDATE spots SET status=? WHERE area_id=? AND spot_id=?"
+        );
+
+        ps.setString(1, estado);
+        ps.setString(2, area);
+        ps.setString(3, spot);
+
+        ps.executeUpdate();
+
+        ps.close();
+        cn.close();
+
+    } catch (SQLException e) {
+        System.out.println("Error al actualizar spot" + e.getMessage());
+    }
+}
 
     
     public static void limpiarTodo() {

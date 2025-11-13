@@ -1,7 +1,6 @@
 
 package com.mycompany.proyecto_estacionamiento;
 
-import javax.swing.JOptionPane;
 
 
 public class IngresarVehiculos extends javax.swing.JPanel {
@@ -9,70 +8,88 @@ public class IngresarVehiculos extends javax.swing.JPanel {
     /**
      * Creates new form IngresarVehiculos
      */
+   
+    
+    
     public IngresarVehiculos() {
         initComponents();
+        
         ComboPago.setModel(new javax.swing.DefaultComboBoxModel<>(
                 new String[]{"EFECTIVO", "TARJETA", "TRANSFERENCIA"}));
 
         ComboTipo.setModel(new javax.swing.DefaultComboBoxModel<>(
                 new String[]{"DIA", "HORA"}));
 
-        BtnGuardar.addActionListener(e -> registrarIngreso());
+       
         
     }
     
-     private void registrarIngreso() {
-        String placa = TexPlaca.getText().trim().toUpperCase();
-    if (placa.isEmpty()) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Ingrese una placa correcta.");
-        return;
-    }
-
-    String tipoPago = ComboPago.getSelectedItem().toString();
-    String tipoTarifa = ComboTipo.getSelectedItem().toString();
-
-   
-    if (DatosCentrales.TICKETSaCTIVOS.containsKey(placa)) { 
-        javax.swing.JOptionPane.showMessageDialog(this, "Este vehículo ya está dentro del parqueo.");
-        return;
-    }
-
-   
-    Vehiculos v = DatosCentrales.buscarPorPlaca(placa);
-    if (v == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "La placa no existe en los datos");
-        return;
-    }
-
+    private void registrarIngreso() {
+        
+    String placaInput = TexPlaca.getText();
+    String placaNorm = DatosCentrales.normalizarPlaca(placaInput);
     
+            if (placaNorm.isEmpty()) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Ingrese una placa correcta.");
+                return;
+            }
+
+    Ticket.MetodoPago metodo = Ticket.MetodoPago.valueOf(ComboPago.getSelectedItem().toString());
+    Ticket.TipoTarifa tarifa = Ticket.TipoTarifa.valueOf(ComboTipo.getSelectedItem().toString());
+
+    if (DatosCentrales.TICKETSaCTIVOS.containsKey(placaNorm)) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Este vehiculo ya esta dentro del parqueo");
+        return;
+    }
+
+    Vehiculos v = DatosCentrales.buscarPorPlaca(placaNorm);
+    if (v == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "La placa no existe en los datos.");
+        return;
+    }
+
     String idArea = DatosCentrales.areaPorNombre(v.getTipoArea());
     if (idArea == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "No se encontro el area para: " + v.getTipoArea());
+        javax.swing.JOptionPane.showMessageDialog(this, "No se encontro el area para " + v.getTipoArea());
         return;
     }
 
-  
-    Spots spot = DatosCentrales.SpotLibre(idArea, v.getTipoVehiculo());
-    if (spot == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "No hay espacios libres en el area " + v.getTipoArea());
-        return;
+    Spots spottt = DatosCentrales.spotReservadoDePlaca(placaNorm);
+    if (spottt != null) {
+        spottt.setStatus(DatosCentrales.STATUS_OCUPADO);
+        DatosCentrales.cancelarReservaPorPlaca(placaNorm);
+    } else {
+        spottt = DatosCentrales.SpotLibre(idArea, v.getTipoVehiculo());
+        if (spottt == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "No hay espacios libres en el area " + v.getTipoArea());
+            return;
+        }
+        spottt.setStatus(DatosCentrales.STATUS_OCUPADO);
     }
 
-             
-            //se crea ekl tikcet
-         Ticket t = new Ticket(placa,Ticket.TipoTarifa.valueOf(tipoTarifa),  Ticket.MetodoPago.valueOf(tipoPago), v.getTipoVehiculo(), idArea,spot.getIdSpots());
+    Ticket t = new Ticket(
+        placaNorm, tarifa, metodo,
+        v.getTipoVehiculo(), idArea,
+        spottt.getIdSpots()
+    );
 
-        
-        DatosCentrales.ocuparSpot(spot, placa, t); // ocupamos un spot y tambien registamos el tiket 
-        DatosCentrales.HISTORIALdeTICKETS.add(t);
+    DatosCentrales.ocuparSpot(spottt, placaNorm, t);
+    DatosCentrales.HISTORIALdeTICKETS.add(t);
 
-        javax.swing.JOptionPane.showMessageDialog(this, t.imprimir());
+   
+    try (var cn = Conexion_BD.conectar(); // lo ghuarada en la base de datos
+         var ps = cn.prepareStatement("UPDATE spots SET status=? WHERE area_id=? AND spot_id=?")) {
+        ps.setString(1, DatosCentrales.STATUS_OCUPADO);
+        ps.setString(2, spottt.getIdArea());
+        ps.setString(3, spottt.getIdSpots());
+        ps.executeUpdate();
+    } catch (Exception ex) {
+        System.out.println("Error al actualizar estado en BD: " + ex.getMessage());
+    }
 
-        DatosCentrales.ocuparSpot(spot, placa, t); // Ocupar el spot y registrar ticket
+    
 
-      javax.swing.JOptionPane.showMessageDialog(this,  "Vehículo ingresado al area" + v.getTipoArea() + "\ny Spot " + spot.getIdSpots());
-
- 
+    javax.swing.JOptionPane.showMessageDialog(this, t.imprimir()); //  El mapa se actualiza solo por al Timer en panelMapa
     TexPlaca.setText("");
     ComboPago.setSelectedIndex(0);
     ComboTipo.setSelectedIndex(0);
@@ -101,6 +118,11 @@ public class IngresarVehiculos extends javax.swing.JPanel {
         jLabel2.setText("Ingrese la placa del vehiculo");
 
         BtnGuardar.setText("Ingresar");
+        BtnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnGuardarActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Tipo de pago");
 
@@ -164,6 +186,12 @@ public class IngresarVehiculos extends javax.swing.JPanel {
                         .addGap(53, 53, 53))))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
+        // TODO add your handling code here:
+         registrarIngreso();
+        
+    }//GEN-LAST:event_BtnGuardarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -19,7 +19,7 @@ public class ListaVehiculos extends javax.swing.JPanel {
     public ListaVehiculos() {
            initComponents();  
         
-        Combox.setModel(new javax.swing.DefaultComboBoxModel<>( new String[]{"Usuarios", "Vehículos", "Áreas", "Spots", "Usuarios y Vehiculos"}));
+       Combox.setModel(new javax.swing.DefaultComboBoxModel<>( new String[]{ "Usuarios", "Vehículos", "Áreas", "Spots", "Usuarios y Vehiculos", "Histórico y Totales"}));
          
          
         Combox.setSelectedIndex(0);// combo  no editable 
@@ -36,9 +36,10 @@ public class ListaVehiculos extends javax.swing.JPanel {
     switch (sel) {
          case "Usuarios"  -> mostrarUsuarios();// reule swich 
         case "Vehículos" -> mostrarVehiculos();
-      case "Áreas"     -> mostrarAreas();
+      case "Areas"     -> mostrarAreas();
          case "Spots"     -> mostrarSpots();
           case "Usuarios y Vehiculos"  -> mostrarUsuariosConVehiculo();
+       case "Historico y Totales" -> mostrarHistoricoYTOTALES();
     }
 }
 
@@ -58,7 +59,6 @@ public class ListaVehiculos extends javax.swing.JPanel {
         }
     
        
-
             // elimina guiones/espacios y pasa a mayúsculas para empatar aunque vengan distinto
             private String normPlaca(String s){
                 if (s == null) return "";
@@ -71,11 +71,17 @@ public class ListaVehiculos extends javax.swing.JPanel {
     editartabla md = new editartabla(new String[]{"Carne","Nombre","Placa","Carrera"});
     
     for (Usuarios u : DatosCentrales.USUARIOS) {
-        md.addRow(new Object[]{ s(u.getCarne()), s(u.getNombre()), s(u.getPlaca()), s(u.getCarrera()) });
+        md.addRow(new Object[]{ 
+            s(u.getCarne()), 
+            s(u.getNombre()),
+            s(u.getPlaca()),
+            s(u.getCarrera()) });
     }
         Tablitaa.setModel(md);
      }
 
+    
+    
     public void mostrarVehiculos() {
         
     editartabla md = new editartabla(new String[]{"Placa","Tipo Vehiculo","Tipo area"});
@@ -107,27 +113,28 @@ public class ListaVehiculos extends javax.swing.JPanel {
     }
     
        private void mostrarUsuariosConVehiculo() {
-    // 0) Si hay edición activa en la tabla, ciérrala para leer bien los datos
-                if (Tablitaa.isEditing()) {
+   
+                if (Tablitaa.isEditing()) {  // cierra para leer mejor los datos
                     Tablitaa.getCellEditor().stopCellEditing();
                 }
 
-                // 1) Índice rápido: placa normalizada -> Vehiculos
-                java.util.Map<String, Vehiculos> idxVehPorPlaca = new java.util.HashMap<>();
-                for (Vehiculos v : DatosCentrales.VEHICULOS) {
-                    String p = normPlaca(v == null ? null : v.getPlaca());
-                    if (!p.isEmpty()) idxVehPorPlaca.put(p, v);
-                }
+                
+                java.util.Map<String, Vehiculos> idxVehPorPlaca = new java.util.HashMap<>(); // placa normalizada y vvehiculos
+                
+                        for (Vehiculos v : DatosCentrales.VEHICULOS) {
+                            String p = normPlaca(v == null ? null : v.getPlaca());
+                            if (!p.isEmpty()) idxVehPorPlaca.put(p, v);
+                        }
 
-                // 2) Modelo combinado
+             
                 javax.swing.table.DefaultTableModel md = new javax.swing.table.DefaultTableModel(
                     new String[]{"Carné","Nombre","Placa","Carrera","Tipo Vehículo","Tipo Área"}, 0
                 ){
                     @Override public boolean isCellEditable(int r, int c){ return false; }
                 };
 
-                // 3) Unir Usuario + Vehículo por PLACA normalizada
-                for (Usuarios u : DatosCentrales.USUARIOS) {
+                
+                for (Usuarios u : DatosCentrales.USUARIOS) {  // aqui se une el usuario y el vehiculo por la placa normalixadda 
                     String carne   = nz(u.getCarne());
                     String nombre  = nz(u.getNombre());
                     String placa   = nz(u.getPlaca());
@@ -142,8 +149,52 @@ public class ListaVehiculos extends javax.swing.JPanel {
 
                 Tablitaa.setModel(md);
     
-}
+            }
+       
+     
+      public void mostrarHistoricoYTOTALES() {
+          
+        javax.swing.table.DefaultTableModel md = new javax.swing.table.DefaultTableModel(
+            new String[]{"Ticket", "Placa", "Área", "Spot", "Ingreso", "Salida", "Pago", "Monto"}, 0
+        );
 
+                java.math.BigDecimal totalEfe = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal totalTar = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal totalTra = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal totalGen = java.math.BigDecimal.ZERO;
+
+            for (Historico h : DatosCentrales.HISTORICO) {
+                
+                String pago = (h.MetodoPago == null ? "" : h.MetodoPago.toUpperCase());
+                md.addRow(new Object[]{
+                    h.IdTicket,
+                    h.Placa,
+                    h.IdArea,
+                    h.IdSpots,
+                    (h.FechaIngreso == null ? "" : h.FechaIngreso.toString()),
+                    (h.FechaSalida == null ? "" : h.FechaSalida.toString()),
+                    pago,
+                    "Q " + h.Monto
+                });
+
+        if (pago.contains("EFE")) totalEfe = totalEfe.add(h.Monto);  //se suman los totalers
+        else if (pago.contains("TAR")) totalTar = totalTar.add(h.Monto);
+        else if (pago.contains("TRA")) totalTra = totalTra.add(h.Monto);
+
+        totalGen = totalGen.add(h.Monto);
+    }
+
+    
+    md.addRow(new Object[]{"", "", "", "", "", "", "EFECTIVO", "Q " + totalEfe}); // se agregarn liernas de totales al final
+    md.addRow(new Object[]{"", "", "", "", "", "", "TARJETA", "Q " + totalTar});
+    md.addRow(new Object[]{"", "", "", "", "", "", "TRANSFERENCIA", "Q " + totalTra});
+    md.addRow(new Object[]{"", "", "", "", "", "", "TOTAL", "Q " + totalGen});
+
+    Tablitaa.setModel(md);
+}
+ 
+       
+       
 
   
     /**
@@ -163,6 +214,7 @@ public class ListaVehiculos extends javax.swing.JPanel {
         BtnGuardar = new javax.swing.JButton();
         BtnEliminar = new javax.swing.JButton();
         BtnModificar = new javax.swing.JButton();
+        BtnSubir = new javax.swing.JButton();
 
         jLabel1.setText("Datos Generales");
 
@@ -209,6 +261,13 @@ public class ListaVehiculos extends javax.swing.JPanel {
             }
         });
 
+        BtnSubir.setText("Subir");
+        BtnSubir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnSubirActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -219,13 +278,16 @@ public class ListaVehiculos extends javax.swing.JPanel {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(BtnGuardar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
                         .addComponent(BtnModificar)
-                        .addGap(52, 52, 52)
-                        .addComponent(BtnEliminar)))
+                        .addGap(18, 18, 18)
+                        .addComponent(BtnEliminar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(BtnSubir)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(26, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel2)
@@ -249,7 +311,8 @@ public class ListaVehiculos extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(BtnGuardar)
                     .addComponent(BtnEliminar)
-                    .addComponent(BtnModificar))
+                    .addComponent(BtnModificar)
+                    .addComponent(BtnSubir))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                 .addContainerGap())
@@ -348,8 +411,8 @@ public class ListaVehiculos extends javax.swing.JPanel {
     JOptionPane.showMessageDialog(this, "Cambios guardados en memoria");
 }
 
-        // Helper para evitar nulls
-        private String nz(Object o) {
+        
+        private String nz(Object o) {  //  evita que quede en nulls
             return (o == null) ? "" : o.toString().trim();
 
 
@@ -360,7 +423,7 @@ public class ListaVehiculos extends javax.swing.JPanel {
          int fila = Tablitaa.getSelectedRow();
          
         if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Selecciona una fila para eliminar.");
+            JOptionPane.showMessageDialog(this, "Selecciona una fila para eliminar");
             return;
         }
 
@@ -387,11 +450,17 @@ public class ListaVehiculos extends javax.swing.JPanel {
             model.addRow(new Object[]{"", "", "", ""}); // agrega fila sin nada
     }//GEN-LAST:event_BtnModificarActionPerformed
 
+    private void BtnSubirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSubirActionPerformed
+        // TODO add your handling code here:
+        Subir_BD.subirTodoDesdeDatosCentrales();
+    }//GEN-LAST:event_BtnSubirActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnEliminar;
     private javax.swing.JButton BtnGuardar;
     private javax.swing.JButton BtnModificar;
+    private javax.swing.JButton BtnSubir;
     private javax.swing.JComboBox<String> Combox;
     private javax.swing.JTable Tablitaa;
     private javax.swing.JLabel jLabel1;

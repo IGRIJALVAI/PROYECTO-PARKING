@@ -19,6 +19,7 @@ public class Ticket {
     private final String idArea;        
     private final String idSpot;       
     private final LocalDateTime horaIngreso;
+    private LocalDateTime horaSalida;
 
     public Ticket(String placa,TipoTarifa tarifa,MetodoPago pago,String tipoVehiculo, String idArea,String idSpot) {
 
@@ -52,7 +53,13 @@ public class Ticket {
         return (s == null) ? "" : s.replace("-", "").replace(" ", "").toUpperCase();
     }
 
-  
+        public LocalDateTime getHoraSalida() {
+          return horaSalida;
+      }
+
+      public void setHoraSalida(LocalDateTime horaSalida) {
+          this.horaSalida = horaSalida;
+      }
     public String getPlaca() { 
         return placa; 
     }
@@ -92,7 +99,7 @@ public class Ticket {
             "Tarifa: " + tarifa + "\n" +
             "Pago: " + pago + "\n" +
             "Hora de ingreso: " + horaIngreso + "\n" +
-            " ADIOS ";
+            " BIENVENIDO AL PARQUEO MAS SEGURO DE TODO MAZATE ";
 }
 
     

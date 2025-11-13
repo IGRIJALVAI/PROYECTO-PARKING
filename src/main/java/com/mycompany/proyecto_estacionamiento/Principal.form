@@ -47,7 +47,7 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="menuListado">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Lista de vehiculos"/>
+                <Property name="text" type="java.lang.String" value="Vista de datos"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuListadoActionPerformed"/>
@@ -59,6 +59,21 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuCargarActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="jMenu3">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Mapa de Spots"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="MenuMapa">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Ver mapa"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MenuMapaActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

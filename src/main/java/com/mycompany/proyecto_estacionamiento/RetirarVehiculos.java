@@ -1,8 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
+
 package com.mycompany.proyecto_estacionamiento;
+
+import java.math.BigDecimal;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -13,9 +13,126 @@ public class RetirarVehiculos extends javax.swing.JPanel {
     /**
      * Creates new form RetirarVehiculos
      */
+    
+      private static final BigDecimal TARIFA_DIA  = new BigDecimal("10.00");
+      private static final BigDecimal TARIFA_HORA = new BigDecimal("5.00"); 
+    
+    
     public RetirarVehiculos() {
         initComponents();
+       
     }
+    
+    private void retirar() {
+
+    String placaentrante = TexRetirar.getText().trim().toUpperCase();
+    
+    if (placaentrante.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Ingrese una placa valida");
+        return;
+    }
+
+    String placaNorm = DatosCentrales.normalizarPlaca(placaentrante);
+    
+    Ticket ticketnuevo = DatosCentrales.TICKETSaCTIVOS.get(placaNorm);
+    
+        if (ticketnuevo == null) {
+            JOptionPane.showMessageDialog(this, "Este vehiculo no esta dentro del parqueo");
+            return;
+        }
+
+    java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
+    java.time.Duration dur = java.time.Duration.between(ticketnuevo.getHoraIngreso(), ahora);
+    
+    long minutos = Math.max(1, dur.toMinutes());  // aqui se varificas mel tiempo
+
+    java.math.BigDecimal monto;
+    String detalleTiempo;
+
+    if (ticketnuevo.getTarifa() == Ticket.TipoTarifa.DIA) {
+        monto = TARIFA_DIA;
+        detalleTiempo = "Tarifa DIA: Q" + TARIFA_DIA;
+    } else {
+        long horas = (minutos + 59) / 60; // siempre se le cobra la hora no importa el tiempo
+        if (horas <= 0) horas = 1;
+        monto = TARIFA_HORA.multiply(new java.math.BigDecimal(horas));
+        detalleTiempo = "Tarifa HORA: " + horas + "h × Q" + TARIFA_HORA + " = Q" + monto;
+    }
+
+    if (monto.compareTo(java.math.BigDecimal.ZERO) > 0) {
+        DatosCentrales.agregarPago(ticketnuevo.getPago(), monto);
+    }
+
+    String idArea = ticketnuevo.getIdArea();
+    String idSpot = ticketnuevo.getIdSpot();
+    Spots s = DatosCentrales.buscarSpotIds(idArea, idSpot);
+
+    if (ticketnuevo.getTarifa() == Ticket.TipoTarifa.DIA) {
+        
+        if (s != null) { //  Deja erl reservad en memoria y en la base
+            s.setStatus(DatosCentrales.STATUS_RESERVADO);
+            try (var cn = Conexion_BD.conectar();
+                 var ps = cn.prepareStatement("UPDATE spots SET status=? WHERE area_id=? AND spot_id=?")) {
+                ps.setString(1, DatosCentrales.STATUS_RESERVADO);
+                ps.setString(2, idArea);
+                ps.setString(3, idSpot);
+                ps.executeUpdate();
+            } catch (Exception e) {
+                System.out.println("Error BD al reservar spot: " + e.getMessage());
+            }
+
+         
+            DatosCentrales.crearReservaPorMinutos(placaNorm, s, 1);    // se controla el tiempo y se deja una reserva solo por 1 minuto
+        }
+
+      
+        DatosCentrales.SPOTyPLACA.remove(DatosCentrales.Spotllave(idArea, idSpot));     // quita las  relaciones del cARro
+        DatosCentrales.PLACAySPOT.remove(placaNorm);
+        DatosCentrales.TICKETSaCTIVOS.remove(placaNorm);
+
+    } else {
+      
+        if (s != null) {    // libera el spot de por hora
+            s.setStatus(DatosCentrales.STATUS_LIBRE);
+            try (var cn = Conexion_BD.conectar();
+                 var ps = cn.prepareStatement("UPDATE spots SET status=? WHERE area_id=? AND spot_id=?")) {
+                ps.setString(1, DatosCentrales.STATUS_LIBRE);
+                ps.setString(2, idArea);
+                ps.setString(3, idSpot);
+                ps.executeUpdate();
+            } catch (Exception e) {
+                System.out.println("Error BD al liberar spot: " + e.getMessage());
+            }
+        }
+        DatosCentrales.liberarPorPlaca(placaNorm);
+    }
+    
+    
+        ticketnuevo.setHoraSalida(java.time.LocalDateTime.now());
+        Historico h = Historico.desdeTicket(ticketnuevo, monto);
+        h.MetodoPago = ticketnuevo.getPago().name();
+        DatosCentrales.HISTORICO.add(h);
+        Importar_BD.subirHistorico(java.util.Collections.singletonList(h));
+    
+    
+
+    // tickert de salida 
+    String msg =
+        "RETIRO\n" +
+        "Placa: " + ticketnuevo.getPlaca() + "\n" +
+        "Vehiculo: " + ticketnuevo.getTipoVehiculo() + "\n" +
+        "Area/Spot: " + idArea + " - " + idSpot + "\n" +
+        "Ingreso: " + ticketnuevo.getHoraIngreso() + "\n" +
+        detalleTiempo + "\n" +
+        "Pago: " + ticketnuevo.getPago() + "\n" +
+        "TOTAL: Q" + monto;
+
+    JOptionPane.showMessageDialog(this, msg);
+    TexRetirar.setText("");
+}
+    
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -27,29 +144,68 @@ public class RetirarVehiculos extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        TexRetirar = new javax.swing.JTextField();
+        BtnRetirar = new javax.swing.JButton();
 
         jLabel1.setText("RETIRAR VEHICULO");
+
+        TexRetirar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TexRetirarActionPerformed(evt);
+            }
+        });
+
+        BtnRetirar.setText("Retirar");
+        BtnRetirar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnRetirarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(145, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(151, 151, 151))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(143, 143, 143)
+                        .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(55, 55, 55)
+                        .addComponent(TexRetirar, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(153, 153, 153)
+                        .addComponent(BtnRetirar)))
+                .addContainerGap(57, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(49, 49, 49)
+                .addGap(34, 34, 34)
                 .addComponent(jLabel1)
-                .addContainerGap(235, Short.MAX_VALUE))
+                .addGap(46, 46, 46)
+                .addComponent(TexRetirar, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(BtnRetirar)
+                .addContainerGap(84, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void TexRetirarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TexRetirarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TexRetirarActionPerformed
+
+    private void BtnRetirarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnRetirarActionPerformed
+        // TODO add your handling code here:
+        
+        retirar();
+    }//GEN-LAST:event_BtnRetirarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton BtnRetirar;
+    private javax.swing.JTextField TexRetirar;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }
