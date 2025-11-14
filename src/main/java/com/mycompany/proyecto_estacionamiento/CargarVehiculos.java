@@ -227,8 +227,6 @@ public class CargarVehiculos extends javax.swing.JPanel {
         public void cargarArchivo(File archivo) {
             //FileReader fr= null;
             BufferedReader br= null; //leeer linea por lenuia
-         
-           usuario.clear();
 
           try {
                 br = new BufferedReader(new InputStreamReader(
@@ -266,7 +264,11 @@ public class CargarVehiculos extends javax.swing.JPanel {
                         llenartabla();             
                     } else if (headerLow.startsWith("area_id,nombre,capacidad,tipo_vehiculo")) {
    
-                        for (Areas a : areas) {  // arregla nombres de areqas tras cargarlas
+                    
+                        cargarAreas(br);
+
+                      
+                        for (Areas a : areas) {  // arregla nombres de araeas tras cargarlas
                             if (a.getNombreA() != null) {
                                 String n = a.getNombreA().trim().toUpperCase();
 
@@ -290,40 +292,43 @@ public class CargarVehiculos extends javax.swing.JPanel {
                             if (a.getTipoVehiculo() != null) {
                                 a.setTipoVehiculo(a.getTipoVehiculo().trim().toUpperCase());
                             }
-                            
-                            
-                        }
-                        cargarAreas(br);            
-                        llenarTablaAreas();    
-                        
-                    } else if (headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status")) {
-                        
-                        
-                    for (Spots s : spots) {
-                        
-                       if (s.getIdArea() != null) {
-                            s.setIdArea(s.getIdArea().trim().toUpperCase());
-                        }
-                        if (s.getIdSpots() != null) {
-                            s.setIdSpots(s.getIdSpots().trim().toUpperCase());
-                        }
-                        if (s.getTipoVehiculo() != null) {
-                            s.setTipoVehiculo(s.getTipoVehiculo().trim().toUpperCase());
                         }
 
-                        String st = (s.getStatus() == null ? "" : s.getStatus().trim().toUpperCase());
-                        if (st.equals("FREE") || st.equals("AVAILABLE")) {
-                            s.setStatus("LIBRE");
-                        } else if (st.equals("OCCUPIED") || st.equals("BUSY")) {
-                            s.setStatus("OCUPADO");
-                        } else if (st.isEmpty()) {
-                            s.setStatus("LIBRE"); 
-                        } else {
-                            s.setStatus(st); // ya viene libre o ocupado
-                        }
-                    }
+                       
+                        llenarTablaAreas();
+
+                    } else if (headerLow.startsWith("spot_id,area_id,tipo_vehiculo,status")) {
+
+                       
                         cargarSpots(br);
+
+                    
+                        for (Spots s : spots) { // normalizar los datos YA cargados
+                            if (s.getIdArea() != null) {
+                                s.setIdArea(s.getIdArea().trim().toUpperCase());
+                            }
+                            if (s.getIdSpots() != null) {
+                                s.setIdSpots(s.getIdSpots().trim().toUpperCase());
+                            }
+                            if (s.getTipoVehiculo() != null) {
+                                s.setTipoVehiculo(s.getTipoVehiculo().trim().toUpperCase());
+                            }
+
+                            String st = (s.getStatus() == null ? "" : s.getStatus().trim().toUpperCase());
+                            if (st.equals("FREE") || st.equals("AVAILABLE")) {
+                                s.setStatus("LIBRE");
+                            } else if (st.equals("OCCUPIED") || st.equals("BUSY")) {
+                                s.setStatus("OCUPADO");
+                            } else if (st.isEmpty()) {
+                                s.setStatus("LIBRE"); 
+                            } else {
+                                s.setStatus(st); // ya viene libreo o ocuapado 
+                            }
+                        }
+
+                       
                         llenarTablaSpots();
+                        
                         
                     }else if (headerLow.startsWith("ticket_id,placa,area_id,spot_id,fecha_ingreso,fecha_salida,modo,monto")) {
                         
@@ -430,33 +435,68 @@ public class CargarVehiculos extends javax.swing.JPanel {
         }
     }
 }
-    // ====== HISTÓRICO ======
-  private void cargarHistorico(BufferedReader br) throws IOException {
+   
+           private void cargarHistorico(BufferedReader br) throws IOException {
+
     historicos.clear();
-
     String linea;
+
     while ((linea = br.readLine()) != null) {
-        String[] a = linea.split(",", -1); // ticket_id, placa, area_id, spot_id, fecha_ingreso, fecha_salida, modo, monto
-        if (a.length >= 8) {
-            Historico h = new Historico();
-            h.IdTicket     = a[0].trim();
-            h.Placa        = a[1].trim();
-            h.IdArea       = a[2].trim();
-            h.IdSpots      = a[3].trim();
+        String[] a = linea.split(",", -1); // mantener vacíos
 
-           
-            h.FechaIngreso = a[4].isBlank() ? null : java.time.LocalDateTime.parse(a[4].trim()); // Fechas si vienen vaciias las dejamos en null
+        
+        if (a.length < 9) {
+            continue; // línea incompleta
+        }
 
-           
-            h.TipoTarifa   = a[6].trim();  // ya sea tipo dia  o por hora
+        Historico h = new Historico();
 
+        h.IdTicket = a[0].trim();
+        h.Placa    = a[1].trim();
+        h.IdArea   = a[2].trim();
+        h.IdSpots  = a[3].trim();
+
+       
+        h.FechaIngreso = parseFechaSeguro(a[4]);
+        h.FechaSalida  = parseFechaSeguro(a[5]);
+
+        h.TipoTarifa = a[6].trim();
+        h.MetodoPago = a[7].trim();
+
+        
+        if (a[8].isBlank()) {  // Monto
+            h.Monto = java.math.BigDecimal.ZERO;
+        } else {
+            h.Monto = new java.math.BigDecimal(a[8].trim());
+        }
+
+        historicos.add(h);
+    }
+}
+
+
+private java.time.LocalDateTime parseFechaSeguro(String txt) {
+    if (txt == null) return null;
+    txt = txt.trim();
+    if (txt.isEmpty()) return null;
+
+    try {
+       
+        return java.time.LocalDateTime.parse(txt);
+    } catch (Exception e) {
+        try {
             
-            h.Monto        = a[7].isBlank() ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(a[7].trim());// Monto
-
-            historicos.add(h);
+            java.time.format.DateTimeFormatter f =
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return java.time.LocalDateTime.parse(txt, f);
+        } catch (Exception ex) {
+            System.out.println("No pude parsear fecha: " + txt);
+            return null;
         }
     }
 }
+
+
 
     
      
@@ -535,6 +575,7 @@ public class CargarVehiculos extends javax.swing.JPanel {
             Tablita.setModel(md);
 }
      private void llenarTablaHistorico() {
+         
     javax.swing.table.DefaultTableModel md = new javax.swing.table.DefaultTableModel(
         new String[]{"Ticket", "Placa", "Área", "Spot", "Ingreso", "Salida", "Tarifa", "Monto"}, 0
     );

@@ -2,6 +2,7 @@
 package com.mycompany.proyecto_estacionamiento;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import javax.swing.JOptionPane;
 
 /**
@@ -41,27 +42,46 @@ public class RetirarVehiculos extends javax.swing.JPanel {
             return;
         }
 
-    java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
-    java.time.Duration dur = java.time.Duration.between(ticketnuevo.getHoraIngreso(), ahora);
-    
-    long minutos = Math.max(1, dur.toMinutes());  // aqui se varificas mel tiempo
+        java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
+        java.time.Duration dur = java.time.Duration.between(ticketnuevo.getHoraIngreso(), ahora);
 
-    java.math.BigDecimal monto;
-    String detalleTiempo;
+        
+        long minutos = Math.max(1, dur.toMinutes()); // asegurar que los minuitos no sean negativos
 
-    if (ticketnuevo.getTarifa() == Ticket.TipoTarifa.DIA) {
-        monto = TARIFA_DIA;
-        detalleTiempo = "Tarifa DIA: Q" + TARIFA_DIA;
-    } else {
-        long horas = (minutos + 59) / 60; // siempre se le cobra la hora no importa el tiempo
-        if (horas <= 0) horas = 1;
-        monto = TARIFA_HORA.multiply(new java.math.BigDecimal(horas));
-        detalleTiempo = "Tarifa HORA: " + horas + "h × Q" + TARIFA_HORA + " = Q" + monto;
-    }
+        java.math.BigDecimal monto;
+        String detalleTiempo;
+        boolean reingresoDiaSinCobro = DatosCentrales.REINGRESO_DIA_SIN_COBRO.contains(placaNorm);
 
-    if (monto.compareTo(java.math.BigDecimal.ZERO) > 0) {
-        DatosCentrales.agregarPago(ticketnuevo.getPago(), monto);
-    }
+        if (ticketnuevo.getTarifa() == Ticket.TipoTarifa.DIA) {
+
+            if (reingresoDiaSinCobro) {
+               
+                monto = java.math.BigDecimal.ZERO;
+                detalleTiempo = "Reingreso en tiempo de tolerancia y sin cargo";
+
+                DatosCentrales.REINGRESO_DIA_SIN_COBRO.remove(placaNorm);
+
+            } else {
+                
+
+                monto = TARIFA_DIA;
+                detalleTiempo = "Tarifa DIA: Q" + TARIFA_DIA;
+            }
+
+        } else {
+         
+            long horas = (minutos + 59) / 60; // redondea a la hora siguiente
+            if (horas <= 0) horas = 1;
+
+            monto = TARIFA_HORA.multiply(new java.math.BigDecimal(horas));
+            detalleTiempo = "Tarifa HORA: " + horas + "h × Q" + TARIFA_HORA + " = Q" + monto;
+        }
+
+       
+        if (monto.compareTo(java.math.BigDecimal.ZERO) > 0) {   // Solo sumamos a los totales si realmente hay algo que cobrar 
+            DatosCentrales.agregarPago(ticketnuevo.getPago(), monto);
+        }
+
 
     String idArea = ticketnuevo.getIdArea();
     String idSpot = ticketnuevo.getIdSpot();
@@ -82,7 +102,9 @@ public class RetirarVehiculos extends javax.swing.JPanel {
             }
 
          
-            DatosCentrales.crearReservaPorMinutos(placaNorm, s, 1);    // se controla el tiempo y se deja una reserva solo por 1 minuto
+            DatosCentrales.crearReservaPorMinutos(placaNorm, s, 1);  // se controla el tiempo y se deja una reserva solo por 1 minuto
+            
+
         }
 
       
@@ -113,6 +135,21 @@ public class RetirarVehiculos extends javax.swing.JPanel {
         h.MetodoPago = ticketnuevo.getPago().name();
         DatosCentrales.HISTORICO.add(h);
         Importar_BD.subirHistorico(java.util.Collections.singletonList(h));
+        
+        
+        
+        
+        
+try (var cn = Conexion_BD.conectar();  // Borrar ticket activo de la base
+     var ps = cn.prepareStatement("DELETE FROM tickets_activos WHERE placa = ?")) {
+
+    ps.setString(1, placaNorm);
+    ps.executeUpdate();
+
+} catch (Exception e) {
+    System.out.println("Error al borrar ticket activo: " + e.getMessage());
+}
+
     
     
 

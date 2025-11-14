@@ -32,6 +32,7 @@ public class DatosCentrales {
     public static final Map<String, String> PLACAySPOT = new HashMap<>();
     public static final java.util.Map<String, java.time.LocalDateTime> RESERVAunRATO = new java.util.HashMap<>(); 
     public static final java.util.Map<String, String> RESERVAdePLACA = new java.util.HashMap<>(); 
+    public static final java.util.Set<String> REINGRESO_DIA_SIN_COBRO = new java.util.HashSet<>();
 
 
     private static final EnumMap<Ticket.MetodoPago, BigDecimal> ComoPago = new EnumMap<>(Ticket.MetodoPago.class);

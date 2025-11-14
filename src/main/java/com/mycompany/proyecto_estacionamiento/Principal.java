@@ -30,6 +30,7 @@ public class Principal extends javax.swing.JFrame {
         Descargar_BD.cargarUsuarios(); // descarga de la bse para tener los datos listos
         Descargar_BD.cargarAreas();
         Descargar_BD.cargarSpots();
+        Descargar_BD.cargarTicketsActivos();
         Descargar_BD.cargarVehiculos();
         liberarReservasVencidas();
         Descargar_BD.cargarHistorico();

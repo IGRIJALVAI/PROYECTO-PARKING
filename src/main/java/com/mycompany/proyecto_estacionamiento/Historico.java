@@ -21,7 +21,7 @@ public class Historico {
     public BigDecimal Monto;
       public String MetodoPago; 
 
-    // ==== Constructores ====
+  
 
     public Historico() {
     }
@@ -39,10 +39,10 @@ public class Historico {
         this.Monto = (Monto == null ? BigDecimal.ZERO : Monto);
     }
 
-    // ==== Método auxiliar para crear desde un Ticket existente ====
+
     public static Historico desdeTicket(Ticket t, BigDecimal monto) {
         return new Historico(
-            "T-" + String.format("%04d", DatosCentrales.HISTORICO.size() + 1), // genera ID tipo T-0001
+            "T-" + String.format("%04d", DatosCentrales.HISTORICO.size() + 1), 
             t.getPlaca(),
             t.getIdArea(),
             t.getIdSpot(),

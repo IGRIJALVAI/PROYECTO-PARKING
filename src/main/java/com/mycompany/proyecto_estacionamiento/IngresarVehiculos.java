@@ -54,18 +54,29 @@ public class IngresarVehiculos extends javax.swing.JPanel {
         return;
     }
 
-    Spots spottt = DatosCentrales.spotReservadoDePlaca(placaNorm);
-    if (spottt != null) {
-        spottt.setStatus(DatosCentrales.STATUS_OCUPADO);
-        DatosCentrales.cancelarReservaPorPlaca(placaNorm);
-    } else {
-        spottt = DatosCentrales.SpotLibre(idArea, v.getTipoVehiculo());
-        if (spottt == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, "No hay espacios libres en el area " + v.getTipoArea());
-            return;
+     Spots spottt = DatosCentrales.spotReservadoDePlaca(placaNorm);
+
+        if (spottt != null) {
+            
+            spottt.setStatus(DatosCentrales.STATUS_OCUPADO);
+
+    
+            DatosCentrales.cancelarReservaPorPlaca(placaNorm);         // Eliminamos la reserva que ya se osuo
+
+         
+            if (tarifa == Ticket.TipoTarifa.DIA) {
+                DatosCentrales.REINGRESO_DIA_SIN_COBRO.add(placaNorm);
+            }
+
+        } else {
+            
+            spottt = DatosCentrales.SpotLibre(idArea, v.getTipoVehiculo());
+            if (spottt == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "No hay espacios libres en el area " + v.getTipoArea());
+                return;
+            }
+            spottt.setStatus(DatosCentrales.STATUS_OCUPADO);
         }
-        spottt.setStatus(DatosCentrales.STATUS_OCUPADO);
-    }
 
     Ticket t = new Ticket(
         placaNorm, tarifa, metodo,
@@ -75,6 +86,38 @@ public class IngresarVehiculos extends javax.swing.JPanel {
 
     DatosCentrales.ocuparSpot(spottt, placaNorm, t);
     DatosCentrales.HISTORIALdeTICKETS.add(t);
+    
+    
+    
+    
+try (var cn = Conexion_BD.conectar(); // Guardar ticket activo en la base
+     var ps = cn.prepareStatement(
+         "INSERT INTO tickets_activos " +
+         "(placa, area_id, spot_id, fecha_ingreso, tipo_tarifa, metodo_pago) " +
+         "VALUES (?, ?, ?, ?, ?, ?) " +
+         "ON DUPLICATE KEY UPDATE " +
+         "area_id = VALUES(area_id), " +
+         "spot_id = VALUES(spot_id), " +
+         "fecha_ingreso = VALUES(fecha_ingreso), " +
+         "tipo_tarifa = VALUES(tipo_tarifa), " +
+         "metodo_pago = VALUES(metodo_pago)"
+     )) {
+
+    ps.setString(1, placaNorm);
+    ps.setString(2, idArea);
+    ps.setString(3, spottt.getIdSpots());
+    ps.setTimestamp(4, java.sql.Timestamp.valueOf(t.getHoraIngreso()));
+    ps.setString(5, t.getTarifa().name());
+    ps.setString(6, t.getPago().name());
+    ps.executeUpdate();
+
+} catch (Exception ex) {
+    System.out.println("Error al guardar ticket activo en BD: " + ex.getMessage());
+}
+
+    
+    
+    
 
    
     try (var cn = Conexion_BD.conectar(); // lo ghuarada en la base de datos

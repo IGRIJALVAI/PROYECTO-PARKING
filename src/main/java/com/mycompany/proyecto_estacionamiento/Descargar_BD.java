@@ -4,6 +4,7 @@ package com.mycompany.proyecto_estacionamiento;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -123,6 +124,62 @@ try (Connection cn = Conexion_BD.conectar();
             System.out.println("Error al cargar vehiculos" + e.getMessage());
         }
     }
+    
+    
+    
+    public static void cargarTicketsActivos() {
+ 
+    DatosCentrales.TICKETSaCTIVOS.clear();    // Limpiar  en memoria
+    DatosCentrales.SPOTyPLACA.clear();
+    DatosCentrales.PLACAySPOT.clear();
+
+    String sql = "SELECT placa, area_id, spot_id, fecha_ingreso, tipo_tarifa, metodo_pago FROM tickets_activos";
+
+    try (Connection cn = Conexion_BD.conectar();
+         PreparedStatement ps = cn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+            String placa     = rs.getString("placa");
+            String placaNorm = DatosCentrales.normalizarPlaca(placa);
+
+            String area   = rs.getString("area_id");
+            String spotId = rs.getString("spot_id");
+
+            var tsIng = rs.getTimestamp("fecha_ingreso");
+            LocalDateTime ingreso = (tsIng == null ? LocalDateTime.now() : tsIng.toLocalDateTime());
+
+            Ticket.TipoTarifa tarifa = Ticket.TipoTarifa.valueOf(rs.getString("tipo_tarifa"));
+            Ticket.MetodoPago metodo = Ticket.MetodoPago.valueOf(rs.getString("metodo_pago"));
+
+            
+            Vehiculos v = DatosCentrales.buscarPorPlaca(placaNorm);  //Buscar vehiculo para saber que tipo es
+            String tipoVeh = (v == null ? "" : v.getTipoVehiculo());
+
+            Ticket t = new Ticket(
+                placaNorm,
+                tarifa,
+                metodo,
+                tipoVeh,
+                area,
+                spotId,
+                ingreso
+            );
+
+            DatosCentrales.TICKETSaCTIVOS.put(placaNorm, t);
+
+            String llave = DatosCentrales.Spotllave(area, spotId);
+            DatosCentrales.SPOTyPLACA.put(llave, placaNorm);
+            DatosCentrales.PLACAySPOT.put(placaNorm, llave);
+        }
+
+        System.out.println("Tickets activos cargados desde la base de datos.");
+
+    } catch (Exception e) {
+        System.out.println("Error al cargar tickets activos: " + e.getMessage());
+    }
+}
+
     
     
     public static void cargarHistorico() {

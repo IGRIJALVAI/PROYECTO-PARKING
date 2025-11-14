@@ -30,18 +30,19 @@ public class ListaVehiculos extends javax.swing.JPanel {
     
     
     public void Llenartabla() {
-        
-    String sel = (String) Combox.getSelectedItem();
-    if (sel == null) return;
-    switch (sel) {
-         case "Usuarios"  -> mostrarUsuarios();// reule swich 
-        case "Vehículos" -> mostrarVehiculos();
-      case "Areas"     -> mostrarAreas();
-         case "Spots"     -> mostrarSpots();
-          case "Usuarios y Vehiculos"  -> mostrarUsuariosConVehiculo();
-       case "Historico y Totales" -> mostrarHistoricoYTOTALES();
+    int idx = Combox.getSelectedIndex();
+    switch (idx) {
+        case 0 -> mostrarUsuarios();
+        case 1 -> mostrarVehiculos();
+        case 2 -> mostrarAreas();
+        case 3 -> mostrarSpots();
+        case 4 -> mostrarUsuariosConVehiculo();
+        case 5 -> mostrarHistoricoYTOTALES();
+        default -> {}
     }
 }
+
+
 
 
     static class editartabla extends javax.swing.table.DefaultTableModel {
@@ -59,8 +60,8 @@ public class ListaVehiculos extends javax.swing.JPanel {
         }
     
        
-            // elimina guiones/espacios y pasa a mayúsculas para empatar aunque vengan distinto
-            private String normPlaca(String s){
+           
+            private String normPlaca(String s){   // elimina guionesy espacios y pasa a mayusuclas para empatar
                 if (s == null) return "";
                 return s.replace("-", "").replace(" ", "").toUpperCase();
             }
