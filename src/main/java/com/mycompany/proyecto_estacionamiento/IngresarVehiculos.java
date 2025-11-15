@@ -115,11 +115,9 @@ try (var cn = Conexion_BD.conectar(); // Guardar ticket activo en la base
     System.out.println("Error al guardar ticket activo en BD: " + ex.getMessage());
 }
 
-    
-    
-    
-
-   
+    spottt.setStatus(DatosCentrales.STATUS_OCUPADO);
+    DatosCentrales.ocuparSpot(spottt, placaNorm, t);
+      
     try (var cn = Conexion_BD.conectar(); // lo ghuarada en la base de datos
          var ps = cn.prepareStatement("UPDATE spots SET status=? WHERE area_id=? AND spot_id=?")) {
         ps.setString(1, DatosCentrales.STATUS_OCUPADO);

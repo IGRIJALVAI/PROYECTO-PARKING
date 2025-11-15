@@ -438,15 +438,15 @@ public class CargarVehiculos extends javax.swing.JPanel {
    
            private void cargarHistorico(BufferedReader br) throws IOException {
 
-    historicos.clear();
+                  historicos.clear();
     String linea;
 
     while ((linea = br.readLine()) != null) {
         String[] a = linea.split(",", -1); // mantener vacíos
 
-        
-        if (a.length < 9) {
-            continue; // línea incompleta
+        if (a.length < 8) {
+          
+            continue;
         }
 
         Historico h = new Historico();
@@ -455,19 +455,28 @@ public class CargarVehiculos extends javax.swing.JPanel {
         h.Placa    = a[1].trim();
         h.IdArea   = a[2].trim();
         h.IdSpots  = a[3].trim();
-
-       
         h.FechaIngreso = parseFechaSeguro(a[4]);
         h.FechaSalida  = parseFechaSeguro(a[5]);
 
-        h.TipoTarifa = a[6].trim();
-        h.MetodoPago = a[7].trim();
+        if (a.length == 8) {
+           
+            h.TipoTarifa = a[6].trim(); // aqui gyuadamos si de dia o variuabkle
+            h.MetodoPago = "";          // lo dejamos vacío
+            if (a[7].isBlank()) {
+                h.Monto = java.math.BigDecimal.ZERO;
+            } else {
+                h.Monto = new java.math.BigDecimal(a[7].trim());
+            }
 
-        
-        if (a[8].isBlank()) {  // Monto
-            h.Monto = java.math.BigDecimal.ZERO;
-        } else {
-            h.Monto = new java.math.BigDecimal(a[8].trim());
+        } else { //por si viene mas
+            h.TipoTarifa = a[6].trim();
+            h.MetodoPago = a[7].trim();
+
+            if (a[8].isBlank()) {
+                h.Monto = java.math.BigDecimal.ZERO;
+            } else {
+                h.Monto = new java.math.BigDecimal(a[8].trim());
+            }
         }
 
         historicos.add(h);

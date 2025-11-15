@@ -1,6 +1,8 @@
 
 package com.mycompany.proyecto_estacionamiento;
 
+import javax.swing.JOptionPane;
+
 
 public class CrearUsuario extends javax.swing.JPanel {
 
@@ -235,13 +237,22 @@ public class CrearUsuario extends javax.swing.JPanel {
     if (!placa.isEmpty()) {  // si ingresa placse crea
       
         if (!existeVehiculo(placa)) {
-            Vehiculos v = new Vehiculos();// si no existe el vehículo por placa, lo creamos
+            Vehiculos v = new Vehiculos();// si no existe el vehículo por placa lo creamos
             v.setPlaca(placa);
             v.setTipoVehiculo(nz(tipoVehiculo));
             v.setTipoArea(nz(tipoArea)); 
             DatosCentrales.VEHICULOS.add(v);
         }
     }
+    try {
+        Importar_BD.insertarUsuariosBatch(DatosCentrales.USUARIOS);
+          Importar_BD.insertarVehiculosBatch(DatosCentrales.VEHICULOS);
+
+    } catch (Exception e) {
+
+    }
+      
+
 
     javax.swing.JOptionPane.showMessageDialog(this, "Usuario guardado correctamente.");
     limpiar();

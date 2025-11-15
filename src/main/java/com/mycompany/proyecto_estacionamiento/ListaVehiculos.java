@@ -5,6 +5,7 @@
 package com.mycompany.proyecto_estacionamiento;
 
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 
 /**
@@ -421,26 +422,74 @@ public class ListaVehiculos extends javax.swing.JPanel {
 
     private void BtnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnEliminarActionPerformed
         // TODO add your handling code here:
-         int fila = Tablitaa.getSelectedRow();
-         
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Selecciona una fila para eliminar");
-            return;
+      
+    int fila = Tablitaa.getSelectedRow();
+
+    if (fila == -1) {
+        JOptionPane.showMessageDialog(this, "Selecciona una fila para eliminar");
+        return;
+    }
+
+    int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "¿Eliminar completamente este usuario y su vehiculo?",
+            "Confirmar",
+            JOptionPane.YES_NO_OPTION
+    );
+
+    if (confirm != JOptionPane.YES_OPTION)
+        return;
+
+  
+    javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) Tablitaa.getModel();
+
+    
+    String carne  = model.getValueAt(fila, 0).toString();
+    String placa  = model.getValueAt(fila, 2).toString();
+
+    String placaNorm = DatosCentrales.normalizarPlaca(placa);
+
+   
+    model.removeRow(fila);
+
+
+    DatosCentrales.USUARIOS.removeIf(u ->
+            carne.equals(u.getCarne()) ||
+            DatosCentrales.normalizarPlaca(u.getPlaca()).equals(placaNorm)
+    );
+
+   
+    DatosCentrales.VEHICULOS.removeIf(v ->
+            DatosCentrales.normalizarPlaca(v.getPlaca()).equals(placaNorm)
+    );
+
+    try (java.sql.Connection cn = Conexion_BD.conectar()) {
+
+    
+        try (java.sql.PreparedStatement ps1 = cn.prepareStatement(
+                "DELETE FROM usuarios WHERE Carne = ? OR Placa = ?")) {
+            ps1.setString(1, carne);
+            ps1.setString(2, placaNorm);
+            ps1.executeUpdate();
         }
 
-       
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Seguro que deseas eliminar esta fila?", "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION)
-            return;
+  
+        try (java.sql.PreparedStatement ps2 = cn.prepareStatement(
+                "DELETE FROM vehiculos WHERE placa = ?")) {
+            ps2.setString(1, placaNorm);
+            ps2.executeUpdate();
+        }
 
-        
-        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) Tablitaa.getModel(); // Eliminar de la tabla
-        model.removeRow(fila);
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error al eliminar en BD: " + e.getMessage());
+        return;
+    }
 
-       
-        BtnGuardarActionPerformed(evt); // reutiliza el botón Guardar 
+ 
+    BtnGuardarActionPerformed(evt);
 
-        JOptionPane.showMessageDialog(this, "Fila eliminada correctamente.");
+
+    JOptionPane.showMessageDialog(this, "Usuario y vehículo eliminados correctamente.");
         
     }//GEN-LAST:event_BtnEliminarActionPerformed
 

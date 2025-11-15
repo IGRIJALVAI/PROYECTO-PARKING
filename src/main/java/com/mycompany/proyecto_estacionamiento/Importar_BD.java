@@ -159,6 +159,32 @@ public class Importar_BD {
     catch(Exception e){ 
         return 0; } }
 
+            public static void eliminarVehiculoYUsuarioPorPlaca(String placa) throws Exception {
+         
+            String placaNorm = (placa == null ? null : DatosCentrales.normalizarPlaca(placa)); // normalizamo todo
+
+            try (Connection cn = Conexion_BD.conectar()) {
+
+                
+                try (PreparedStatement pst1 = cn.prepareStatement( // borramos el veiohculo
+                        "DELETE FROM vehiculos WHERE placa = ?")) {
+                    pst1.setString(1, placaNorm);
+                    pst1.executeUpdate();
+                }
+
+               
+                try (PreparedStatement pst2 = cn.prepareStatement( // y el usuario de cojn la misma placa
+                        "DELETE FROM usuarios WHERE Placa = ?")) {
+                    pst2.setString(1, placaNorm);
+                    pst2.executeUpdate();
+                }
+            }
+        }
+
+    
+    
+    
+    
     
     
     
